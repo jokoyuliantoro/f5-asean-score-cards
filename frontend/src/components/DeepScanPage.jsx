@@ -179,9 +179,9 @@ export default function DeepScanPage() {
               <circle cx="6.5" cy="6.5" r="4"/><line x1="9.5" y1="9.5" x2="13" y2="13"/>
               <circle cx="6.5" cy="6.5" r="1.8" strokeDasharray="2 1.5"/>
             </svg>
-            Deep Probe · Authenticated
+            Deep Discovery · Authenticated
           </span>
-          <h1 className={styles.pageTitle}>Deep Probe Report</h1>
+          <h1 className={styles.pageTitle}>Deep Discovery Report</h1>
           <p className={styles.pageSubtitle}>
             Authenticated vulnerability assessment — OWASP compliance + CVE findings
           </p>
@@ -215,7 +215,7 @@ export default function DeepScanPage() {
       <div className={styles.statStrip}>
         <div className={styles.scoreBlock}>
           <span className={styles.scoreValue} style={{ color: sc }}>{data.score}</span>
-          <span className={styles.scoreLabel}>Deep Probe Score</span>
+          <span className={styles.scoreLabel}>Deep Discovery Score</span>
         </div>
         <div className={styles.statDivider} />
         {[

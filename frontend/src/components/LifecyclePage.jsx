@@ -6,7 +6,7 @@ import styles from './LifecyclePage.module.css';
 const PILLAR_CONFIG = {
   dns: {
     key:       'dns',
-    label:     'DNS Probe',
+    label:     'DNS Discovery',
     color:     'var(--f5-blue)',
     colorLight:'var(--f5-blue-light)',
     icon: (
@@ -21,7 +21,7 @@ const PILLAR_CONFIG = {
   },
   https: {
     key:       'https',
-    label:     'HTTPS Probe',
+    label:     'HTTPS Discovery',
     color:     'var(--f5-blue)',
     colorLight:'var(--f5-blue-light)',
     icon: (
@@ -35,7 +35,7 @@ const PILLAR_CONFIG = {
   },
   surfaceScan: {
     key:       'surfaceScan',
-    label:     'Surface Probe',
+    label:     'Surface Discovery',
     color:     'var(--f5-pomegranate)',
     colorLight:'var(--f5-pomegranate-light)',
     icon: (
@@ -47,7 +47,7 @@ const PILLAR_CONFIG = {
   },
   deepScan: {
     key:       'deepScan',
-    label:     'Deep Probe',
+    label:     'Deep Discovery',
     color:     'var(--f5-purple)',
     colorLight:'var(--f5-purple-light)',
     icon: (
@@ -196,14 +196,14 @@ export default function LifecyclePage({ pillar }) {
             {cfg.label}
           </div>
           <h1 className={styles.pageTitle}>{cfg.label} · Score Lifecycle</h1>
-          <p className={styles.pageSubtitle}>Historical score trends and comparison across all probe groups</p>
+          <p className={styles.pageSubtitle}>Historical score trends and comparison across all discovery groups</p>
         </div>
       </div>
 
       {/* Summary strip */}
       <div className={styles.summaryStrip}>
         {[
-          { label: 'Probe Groups',   value: history.length,                              color: 'var(--f5-N600)' },
+          { label: 'Discovery Groups',   value: history.length,                              color: 'var(--f5-N600)' },
           { label: 'Completed',     value: completed,                                   color: '#1a7a3a'        },
           { label: 'Avg Score',     value: avgScore ?? '—',                             color: scoreColor(avgScore) },
           { label: 'Best Score',    value: bestScore  ? `${bestScore.score} (${bestScore.name})`   : '—', color: scoreColor(bestScore?.score)  },
@@ -220,7 +220,7 @@ export default function LifecyclePage({ pillar }) {
       <div className={styles.body}>
         {/* Left: scan group list */}
         <div className={styles.scanList}>
-          <p className={styles.panelHeading}>Probe Groups</p>
+          <p className={styles.panelHeading}>Discovery Groups</p>
           {history.map(h => {
             const isActive = h.id === selectedId;
             const sc = scoreColor(h.score);
@@ -297,9 +297,9 @@ export default function LifecyclePage({ pillar }) {
 
             {/* Comparison table */}
             <div className={styles.card}>
-              <p className={styles.cardTitle}>All Probe Groups — {cfg.label} Comparison</p>
+              <p className={styles.cardTitle}>All Discovery Groups — {cfg.label} Comparison</p>
               <div className={styles.compHead}>
-                <span>Probe Group</span><span>Account</span><span>Score</span><span>Status</span><span>Age</span>
+                <span>Discovery Group</span><span>Account</span><span>Score</span><span>Status</span><span>Age</span>
               </div>
               {history.map((h, i) => {
                 const sc   = scoreColor(h.score);

@@ -4,11 +4,11 @@ import SampleReport from './SampleReport';
 import { DNS_SAMPLE, HTTPS_SAMPLE, SURFACE_SAMPLE, DEEP_SAMPLE } from '../data/sampleReports';
 import styles from './SampleReportsPage.module.css';
 
-// Label names are kept consistent with the sidebar (DNS Probe, HTTPS Probe, etc.)
+// Label names are kept consistent with the sidebar (DNS Discovery, HTTPS Discovery, etc.)
 const PILLARS = [
   {
     id: 'dns',
-    label: 'DNS Probe',
+    label: 'DNS Discovery',
     description: 'Resilience · Stability · Response Time',
     score: DNS_SAMPLE.overallScore,
     status: DNS_SAMPLE.status,
@@ -25,7 +25,7 @@ const PILLARS = [
   },
   {
     id: 'https',
-    label: 'HTTPS Probe',
+    label: 'HTTPS Discovery',
     description: 'IP Anycast · TLS · TTFB',
     score: HTTPS_SAMPLE.overallScore,
     status: HTTPS_SAMPLE.status,
@@ -40,7 +40,7 @@ const PILLARS = [
   },
   {
     id: 'surface-scan',
-    label: 'Surface Probe',
+    label: 'Surface Discovery',
     description: 'Public endpoints · No credentials required',
     score: SURFACE_SAMPLE.overallScore,
     status: SURFACE_SAMPLE.status,
@@ -54,7 +54,7 @@ const PILLARS = [
   },
   {
     id: 'deep-scan',
-    label: 'Deep Probe',
+    label: 'Deep Discovery',
     description: 'Authenticated · F5 forward proxy traffic analysis',
     score: DEEP_SAMPLE.overallScore,
     status: DEEP_SAMPLE.status,

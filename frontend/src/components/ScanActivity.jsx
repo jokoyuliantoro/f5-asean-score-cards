@@ -19,7 +19,7 @@ export default function ScanActivity() {
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <div className={styles.title}>Last Probe Activity</div>
+        <div className={styles.title}>Last Discovery Activity</div>
         <div className={styles.subtitle}>Most recent runs for this account</div>
       </div>
       {SCAN_ACTIVITY.map((row, i) => (

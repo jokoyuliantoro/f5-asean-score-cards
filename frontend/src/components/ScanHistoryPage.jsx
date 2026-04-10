@@ -97,7 +97,7 @@ export default function ScanHistoryPage() {
       {/* Header */}
       <div className={styles.pageHeader}>
         <div>
-          <h2 className={styles.pageTitle}>Probe History</h2>
+          <h2 className={styles.pageTitle}>Discovery History</h2>
           <p className={styles.pageSubtitle}>
             View, re-launch, or delete past probe groups.
           </p>

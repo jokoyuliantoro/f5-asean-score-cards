@@ -14,14 +14,14 @@ const NAV = [
     section: 'Delivery',
     items: [
       {
-        id: 'dns-group', label: 'DNS Probe', icon: 'dns',
+        id: 'dns-group', label: 'DNS Discovery', icon: 'dns',
         children: [
           { id: 'dns',           label: 'Report'    },
           { id: 'dns-lifecycle', label: 'Lifecycle' },
         ],
       },
       {
-        id: 'https-group', label: 'HTTPS Probe', icon: 'https',
+        id: 'https-group', label: 'HTTPS Discovery', icon: 'https',
         children: [
           { id: 'https',           label: 'Report'    },
           { id: 'https-lifecycle', label: 'Lifecycle' },
@@ -33,14 +33,14 @@ const NAV = [
     section: 'Security',
     items: [
       {
-        id: 'surface-group', label: 'Surface Probe', icon: 'scan', badge: 'Public', badgeType: 'neutral',
+        id: 'surface-group', label: 'Surface Discovery', icon: 'scan', badge: 'Public', badgeType: 'neutral',
         children: [
           { id: 'surface-scan',       label: 'Report'    },
           { id: 'surface-lifecycle',  label: 'Lifecycle' },
         ],
       },
       {
-        id: 'deep-group', label: 'Deep Probe', icon: 'probe', badge: 'Auth', badgeType: 'auth',
+        id: 'deep-group', label: 'Deep Discovery', icon: 'probe', badge: 'Auth', badgeType: 'auth',
         children: [
           { id: 'deep-scan',       label: 'Report'    },
           { id: 'deep-lifecycle',  label: 'Lifecycle' },
@@ -52,7 +52,7 @@ const NAV = [
     section: 'Manage',
     items: [
       { id: 'accounts',     label: 'Accounts',     icon: 'accounts' },
-      { id: 'scan-history', label: 'Probe History', icon: 'history'  },
+      { id: 'scan-history', label: 'Discovery History', icon: 'history'  },
       { id: 'users',        label: 'Users',        icon: 'users', adminOnly: true },
     ],
   },

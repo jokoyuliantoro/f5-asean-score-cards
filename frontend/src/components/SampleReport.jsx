@@ -55,7 +55,7 @@ function DnsReport() {
           </div>
         ))}
       </div>
-      <div className={styles.runInfo}>Probe completed: {d.lastRun}</div>
+      <div className={styles.runInfo}>Discovery completed: {d.lastRun}</div>
     </>
   );
 }
@@ -85,7 +85,7 @@ function HttpsReport() {
           </div>
         ))}
       </div>
-      <div className={styles.runInfo}>Probe completed: {d.lastRun}</div>
+      <div className={styles.runInfo}>Discovery completed: {d.lastRun}</div>
     </>
   );
 }
@@ -116,17 +116,17 @@ function ScanReport({ data }) {
           </div>
         ))}
       </div>
-      <div className={styles.runInfo}>Probe completed: {data.lastRun}</div>
+      <div className={styles.runInfo}>Discovery completed: {data.lastRun}</div>
     </>
   );
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
 const TITLES = {
-  dns:            'DNS Probe',
-  https:          'HTTPS Probe',
-  'surface-scan': 'Surface Probe',
-  'deep-scan':    'Deep Probe',
+  dns:            'DNS Discovery',
+  https:          'HTTPS Discovery',
+  'surface-scan': 'Surface Discovery',
+  'deep-scan':    'Deep Discovery',
 };
 
 export default function SampleReport({ pillar }) {

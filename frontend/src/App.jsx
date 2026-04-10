@@ -21,9 +21,9 @@ const DELIVERY_IDS = new Set(['dns', 'dns-lifecycle', 'https', 'https-lifecycle'
 const SECURITY_IDS = new Set(['surface-scan', 'surface-lifecycle', 'deep-scan', 'deep-lifecycle']);
 
 function getTitle(navItem) {
-  if (DELIVERY_IDS.has(navItem))  return 'Application Delivery Resilience Score Cards';
-  if (SECURITY_IDS.has(navItem))  return 'Application Security Resilience Score Cards';
-  return 'Application Resilience Score Cards';
+  if (DELIVERY_IDS.has(navItem))  return 'Application Delivery Discovery Score Cards';
+  if (SECURITY_IDS.has(navItem))  return 'Application Security Discovery Score Cards';
+  return 'Application Discovery Score Cards';
 }
 
 export default function App() {

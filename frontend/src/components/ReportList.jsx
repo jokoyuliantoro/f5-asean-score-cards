@@ -5,10 +5,10 @@ import styles from './ReportList.module.css';
 const PAGE_SIZE = 3;
 
 const PILLAR_LABELS = {
-  dns:         'DNS Probe',
-  https:       'HTTPS Probe',
-  surfaceScan: 'Surface Probe',
-  deepScan:    'Deep Probe',
+  dns:         'DNS Discovery',
+  https:       'HTTPS Discovery',
+  surfaceScan: 'Surface Discovery',
+  deepScan:    'Deep Discovery',
 };
 
 const PILLAR_DESCS = {
@@ -198,7 +198,7 @@ function ReportOverview({ sg }) {
             The full{' '}<strong>{PILLAR_LABELS[activePillar]}</strong>{' '}report with per-domain
             findings is available under the{' '}
             <strong>{activePillar === 'dns' || activePillar === 'https' ? 'Delivery' : 'Security'}</strong>{' '}
-            section in the sidebar. Select probe group <strong>{sg.name}</strong> to view.
+            section in the sidebar. Select Discovery group <strong>{sg.name}</strong> to view.
           </p>
         </div>
       )}
@@ -251,13 +251,13 @@ export default function ReportList({ accountId }) {
             {total > 0 ? `${start}–${end} of ${total}` : '0 reports'}
           </span>
         </button>
-        <button className={styles.newScanBtn}>+ New Probe</button>
+        <button className={styles.newScanBtn}>+ New Discovery</button>
       </div>
 
       {expanded && (
         <>
           {paged.length === 0 ? (
-            <div className={styles.empty}>No probe groups found for this account.</div>
+            <div className={styles.empty}>No Discovery groups found for this account.</div>
           ) : (
             <div className={styles.list}>
               {paged.map(sg => {

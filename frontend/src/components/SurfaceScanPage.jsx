@@ -176,9 +176,9 @@ export default function SurfaceScanPage() {
             <svg width="12" height="12" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.6">
               <circle cx="6.5" cy="6.5" r="4"/><line x1="9.5" y1="9.5" x2="13" y2="13"/>
             </svg>
-            Surface Probe · Public
+            Surface Discovery · Public
           </span>
-          <h1 className={styles.pageTitle}>Surface Probe Report</h1>
+          <h1 className={styles.pageTitle}>Surface Discovery Report</h1>
           <p className={styles.pageSubtitle}>
             External attack surface — ports, headers, and OWASP compliance
           </p>
