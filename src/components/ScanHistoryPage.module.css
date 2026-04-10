@@ -1,0 +1,244 @@
+.page { padding: 24px; max-width: 1300px; }
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pageTitle   { font-size: 18px; font-weight: 700; color: var(--f5-N600); margin-bottom: 4px; }
+.pageSubtitle { font-size: 13px; color: var(--f5-N500); }
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.toolbarLeft  { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.toolbarRight { display: flex; align-items: center; gap: 8px; }
+
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  padding: 5px 28px 5px 10px;
+  font-size: 13px;
+  color: var(--f5-N600);
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 160px;
+}
+.select:hover, .select:focus { border-color: var(--f5-blue); }
+
+.selectChevron {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: var(--f5-N400);
+  display: flex;
+  align-items: center;
+}
+
+.countLabel { font-size: 12px; color: var(--f5-N400); }
+
+.btnDeleteSel {
+  height: 30px;
+  padding: 0 14px;
+  background: var(--f5-pomegranate-light);
+  border: 1px solid var(--f5-pomegranate);
+  border-radius: var(--radius-sm);
+  color: #9e2a10;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btnDeleteSel:hover { background: #f9c7bd; }
+
+/* ── Table ── */
+.tableWrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--f5-N200); }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--f5-N0);
+  font-size: 13px;
+}
+
+.table th {
+  background: var(--f5-N100);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--f5-N500);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 10px 16px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--f5-N200);
+}
+
+.table td {
+  padding: 12px 16px;
+  vertical-align: top;
+  border-top: 1px solid var(--f5-N200);
+  color: var(--f5-N600);
+}
+
+.table tbody tr:hover td { background: var(--f5-N100); }
+.rowSelected td { background: #eef2ff; }
+
+.thCheck, .tdCheck { width: 40px; padding-left: 16px !important; }
+
+.checkbox { cursor: pointer; accent-color: var(--f5-blue); width: 14px; height: 14px; }
+
+.thActions { text-align: right; }
+
+/* ── Cell content ── */
+.sgName { font-weight: 700; color: var(--f5-N600); margin-bottom: 2px; }
+.sgAge  { font-size: 11px; color: var(--f5-N400); }
+
+.accountName { font-size: 12px; font-weight: 600; color: var(--f5-blue); }
+
+.domainList { display: flex; flex-direction: column; gap: 3px; }
+
+.domainTag {
+  font-size: 11px;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  background: var(--f5-N100);
+  border: 1px solid var(--f5-N200);
+  border-radius: 3px;
+  padding: 1px 6px;
+  color: var(--f5-N600);
+  display: inline-block;
+  width: fit-content;
+}
+
+.domainMore { font-size: 11px; color: var(--f5-N400); }
+
+.tdTime { font-size: 11.5px; color: var(--f5-N500); white-space: nowrap; }
+
+/* ── Pillar pills ── */
+.pillarsRow { display: flex; flex-direction: column; gap: 4px; }
+
+.pillarPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pillarName {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--f5-N400);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  width: 68px;
+  flex-shrink: 0;
+}
+
+.pillarScore { font-size: 13px; font-weight: 700; }
+
+.pillarStatus {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.statusDone     { background: var(--f5-green-light);       color: #0c6f35; }
+.statusProgress { background: var(--f5-blue-light);        color: var(--f5-blue); }
+.statusQueued   { background: var(--f5-amber-light);       color: #7a5a00; }
+.statusNone     { background: var(--f5-N200);              color: var(--f5-N500); }
+.statusFailed   { background: var(--f5-pomegranate-light); color: #9e2a10; }
+
+/* ── Row actions ── */
+.actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+
+.btnRelaunch, .btnDelete, .btnConfirmDel, .btnCancelDel {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btnRelaunch {
+  background: none;
+  border: 1px solid var(--f5-N300);
+  color: var(--f5-N500);
+}
+.btnRelaunch:hover { border-color: var(--f5-blue); color: var(--f5-blue); }
+
+.btnDelete {
+  background: none;
+  border: 1px solid var(--f5-N300);
+  color: var(--f5-N500);
+}
+.btnDelete:hover { border-color: var(--f5-pomegranate); color: var(--f5-pomegranate); }
+
+.btnConfirmDel {
+  background: var(--f5-pomegranate);
+  border: none;
+  color: #fff;
+}
+.btnConfirmDel:hover { background: #d42506; }
+
+.btnCancelDel {
+  background: none;
+  border: 1px solid var(--f5-N300);
+  color: var(--f5-N500);
+}
+.btnCancelDel:hover { border-color: var(--f5-N500); }
+
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.pageBtn {
+  height: 30px;
+  padding: 0 14px;
+  background: none;
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--f5-N500);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.pageBtn:hover:not(:disabled) { border-color: var(--f5-blue); color: var(--f5-blue); }
+.pageBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pageInfo { font-size: 12px; color: var(--f5-N400); }
+
+.emptyRow { text-align: center; padding: 32px; color: var(--f5-N400); font-size: 13px; }

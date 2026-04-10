@@ -1,0 +1,90 @@
+.topbar {
+  height: 56px;
+  background: var(--f5-N0);
+  border-bottom: 1px solid var(--f5-N200);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  flex: 1;
+}
+
+.liveBadge {
+  background: var(--f5-blue-light);
+  color: var(--f5-blue);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+/* email + role badge grouped together */
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.email {
+  font-size: 12px;
+  color: var(--f5-N500);
+}
+
+.roleBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--f5-blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.avatar:hover {
+  background: var(--f5-blue-hover);
+}
+
+.logoutBtn {
+  height: 32px;
+  padding: 0 16px;
+  background: none;
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  color: var(--f5-N500);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.logoutBtn:hover {
+  border-color: var(--f5-blue);
+  color: var(--f5-blue);
+}

@@ -1,0 +1,362 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE LAYOUT
+   The page is a flex column. The tableWrap grows to fill remaining space and
+   clips its overflow. Only tableBody scrolls — header, buttons, footer stay
+   in view at all times.
+═══════════════════════════════════════════════════════════════════════════ */
+.page {
+  padding: 24px;
+  max-width: 1100px;
+  /* Fill the .body scroll container without adding a second scrollbar */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-sizing: border-box;
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.pageTitleGroup { display: flex; flex-direction: column; gap: 4px; }
+.pageTitle      { font-size: 18px; font-weight: 700; color: var(--f5-N600); }
+.pageSubtitle   { font-size: 13px; color: var(--f5-N500); line-height: 1.5; max-width: 520px; }
+.pageSubtitle strong { color: var(--f5-N600); }
+
+.headerRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Role legend pills */
+.legend { display: flex; align-items: center; gap: 6px; }
+.legendItem {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.4px; padding: 3px 10px; border-radius: 10px;
+}
+
+/* Header action buttons */
+.headerBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnAddUser {
+  height: 34px; padding: 0 16px;
+  background: var(--f5-blue); border: none;
+  border-radius: var(--radius-sm); color: #fff;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; white-space: nowrap;
+  transition: background 0.15s;
+}
+.btnAddUser:hover { background: var(--f5-blue-hover); }
+
+.btnDelete {
+  height: 34px; padding: 0 16px;
+  background: none; border: 1.5px solid var(--f5-pomegranate);
+  border-radius: var(--radius-sm); color: var(--f5-pomegranate);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; white-space: nowrap;
+  transition: background 0.15s;
+}
+.btnDelete:hover { background: var(--f5-pomegranate-light); }
+
+.confirmText {
+  font-size: 13px; font-weight: 600; color: var(--f5-pomegranate);
+}
+
+.btnDeleteConfirm {
+  height: 34px; padding: 0 16px;
+  background: var(--f5-pomegranate); border: none;
+  border-radius: var(--radius-sm); color: #fff;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+.btnDeleteConfirm:hover { opacity: 0.88; }
+
+.btnCancel {
+  height: 34px; padding: 0 14px;
+  background: none; border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm); color: var(--f5-N500);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btnCancel:hover { border-color: var(--f5-N500); color: var(--f5-N600); }
+
+/* ── Add User form ────────────────────────────────────────────────────────── */
+.addForm {
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.addFormGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 900px) { .addFormGrid { grid-template-columns: repeat(2, 1fr); } }
+
+.addField   { display: flex; flex-direction: column; gap: 4px; }
+.addLabel   { font-size: 11px; font-weight: 600; color: var(--f5-N600); }
+.req        { color: var(--f5-pomegranate); }
+
+.addInput {
+  height: 34px;
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  font-size: 13px;
+  color: var(--f5-N600);
+  font-family: inherit;
+  background: var(--f5-N0);
+  transition: border-color 0.15s;
+}
+.addInput:focus     { outline: none; border-color: var(--f5-blue); }
+.addInputErr        { border-color: var(--f5-pomegranate); }
+.addErr             { font-size: 11px; color: var(--f5-pomegranate); margin-top: 2px; }
+
+.addRoleWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.addSelect {
+  appearance: none; -webkit-appearance: none;
+  width: 100%; height: 34px;
+  border: 1px solid var(--f5-N300); border-radius: var(--radius-sm);
+  padding: 0 28px 0 10px;
+  font-size: 13px; color: var(--f5-N600);
+  font-family: inherit; background: var(--f5-N0); cursor: pointer;
+  transition: border-color 0.15s;
+}
+.addSelect:focus { outline: none; border-color: var(--f5-blue); }
+.addSelectChevron {
+  position: absolute; right: 8px; pointer-events: none;
+  color: var(--f5-N400); display: flex; align-items: center;
+}
+
+.addActions { display: flex; align-items: center; gap: 8px; }
+.btnAdd {
+  height: 34px; padding: 0 18px;
+  background: var(--f5-blue); border: none;
+  border-radius: var(--radius-sm); color: #fff;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.btnAdd:hover { background: var(--f5-blue-hover); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABLE
+   tableWrap grows to fill remaining page height.
+   tableHead is sticky (not in the scroll).
+   tableBody scrolls independently.
+═══════════════════════════════════════════════════════════════════════════ */
+.tableWrap {
+  flex: 1;               /* fill remaining vertical space               */
+  min-height: 0;         /* allow shrink below natural size in flex ctx  */
+  display: flex;
+  flex-direction: column;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/* Column grid: checkbox | user | country | role | set-role | added */
+.tableHead,
+.tableRow {
+  display: grid;
+  grid-template-columns: 40px 1fr 110px 110px 260px 110px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+@media (max-width: 1000px) {
+  .tableHead,
+  .tableRow { grid-template-columns: 40px 1fr 110px 110px; }
+  .colActions, .colAdded { display: none; }
+}
+
+/* Sticky header */
+.tableHead {
+  height: 38px;
+  background: var(--f5-N100);
+  border-bottom: 1px solid var(--f5-N200);
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--f5-N400);
+  flex-shrink: 0;  /* never shrink — always visible above scroll area */
+}
+
+/* Scrollable body */
+.tableBody {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* ── Individual row ── */
+.tableRow {
+  min-height: 62px;
+  border-top: 1px solid var(--f5-N200);
+  transition: background 0.1s;
+}
+.tableRow:first-child    { border-top: none; }
+.tableRow:hover          { background: var(--f5-N100); }
+.tableRowSelf            { background: #f8f9ff; }
+.tableRowSelected        { background: #eef1ff !important; }
+
+/* ── Checkbox column ── */
+.colCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Custom checkbox */
+.checkWrap {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+.checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0; height: 0;
+}
+.checkMark {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--f5-N300);
+  border-radius: 3px;
+  background: var(--f5-N0);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+.checkbox:checked + .checkMark {
+  background: var(--f5-blue);
+  border-color: var(--f5-blue);
+}
+.checkbox:checked + .checkMark::after {
+  content: '';
+  display: block;
+  width: 4px; height: 7px;
+  border: 2px solid #fff;
+  border-top: none; border-left: none;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+.checkWrap:hover .checkMark { border-color: var(--f5-blue); }
+.checkPlaceholder { width: 16px; height: 16px; }
+
+/* ── User column ── */
+.colUser {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+}
+
+.avatarWrap { position: relative; flex-shrink: 0; }
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+}
+.avatarCheck {
+  position: absolute; top: -3px; right: -3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--f5-blue); color: #fff;
+  font-size: 8px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid #fff;
+}
+
+.userInfo  { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.userName  {
+  font-size: 13px; font-weight: 600; color: var(--f5-N600);
+  display: flex; align-items: center; gap: 6px;
+}
+.userEmail {
+  font-size: 11px; color: var(--f5-N400);
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.selfTag {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.4px; background: var(--f5-blue-light);
+  color: var(--f5-blue); padding: 1px 6px; border-radius: 8px;
+}
+
+/* ── Country column ── */
+.colCountry  { }
+.countryText { font-size: 12px; color: var(--f5-N500); }
+
+/* ── Role badge column ── */
+.colRole { display: flex; align-items: center; }
+.roleBadge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.4px; padding: 3px 10px; border-radius: 10px;
+}
+
+/* ── Role buttons column ── */
+.colActions { display: flex; align-items: center; }
+.roleBtns   { display: flex; gap: 5px; }
+
+.roleBtn {
+  height: 26px; padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: inherit; border: 1.5px solid transparent;
+  transition: all 0.15s; white-space: nowrap;
+}
+.roleBtn:disabled { cursor: default; }
+
+.roleBtnVar_readonly {
+  background: var(--f5-N100); border-color: var(--f5-N300); color: var(--f5-N500);
+}
+.roleBtnVar_readonly:not(:disabled):hover { border-color: var(--f5-N500); background: var(--f5-N200); }
+.roleBtnVar_readonly.roleBtnActive { background: var(--f5-N200); border-color: var(--f5-N400); color: var(--f5-N600); }
+
+.roleBtnVar_user {
+  background: var(--f5-N0); border-color: var(--f5-N300); color: var(--f5-blue);
+}
+.roleBtnVar_user:not(:disabled):hover { border-color: var(--f5-blue); background: var(--f5-blue-light); }
+.roleBtnVar_user.roleBtnActive { background: var(--f5-blue-light); border-color: var(--f5-blue); color: var(--f5-blue); }
+
+.roleBtnVar_admin {
+  background: var(--f5-N0); border-color: var(--f5-N300); color: #9e2a10;
+}
+.roleBtnVar_admin:not(:disabled):hover { border-color: var(--f5-pomegranate); background: var(--f5-pomegranate-light); }
+.roleBtnVar_admin.roleBtnActive { background: var(--f5-pomegranate-light); border-color: var(--f5-pomegranate); color: #9e2a10; }
+
+.selfNote { font-size: 11px; color: var(--f5-N400); font-style: italic; }
+
+/* ── Added date column ── */
+.colAdded   { }
+.addedDate  { font-size: 11px; color: var(--f5-N400); }
+
+/* ── Info footer ── */
+.infoFooter {
+  display: flex; align-items: flex-start; gap: 7px;
+  font-size: 12px; color: var(--f5-N400); line-height: 1.5;
+  flex-shrink: 0; padding-bottom: 4px;
+}

@@ -1,0 +1,34 @@
+.card {
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  border-left: 3px solid var(--f5-N200);
+}
+
+.card.blue   { border-left-color: var(--f5-blue); }
+.card.green  { border-left-color: var(--f5-green); }
+.card.amber  { border-left-color: var(--f5-amber); }
+.card.danger { border-left-color: var(--f5-pomegranate); }
+
+.label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--f5-N500);
+  margin-bottom: 8px;
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  line-height: 1;
+}
+
+.delta {
+  font-size: 12px;
+  margin-top: 7px;
+}
+
+.up   { color: #1ba554; }
+.down { color: var(--f5-pomegranate); }

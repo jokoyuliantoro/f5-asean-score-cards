@@ -1,0 +1,38 @@
+.group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 8px 0 4px;
+}
+
+.digit {
+  width: 52px;
+  height: 60px;
+  border: 1.5px solid var(--f5-N300);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  background: var(--f5-N0);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  caret-color: var(--f5-blue);
+}
+
+.digit:focus {
+  border-color: var(--f5-blue);
+  box-shadow: 0 0 0 3px var(--f5-blue-light);
+}
+
+.digit.filled {
+  border-color: var(--f5-blue);
+  background: var(--f5-blue-light);
+  animation: pop 0.2s ease;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}

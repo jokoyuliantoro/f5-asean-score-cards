@@ -1,0 +1,212 @@
+/* ── Page shell ───────────────────────────────────────────────────────────── */
+.page { padding: 24px; max-width: 1300px; }
+
+/* ── Page header ─────────────────────────────────────────────────────────── */
+.pageHeader {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.pageTitleGroup { display: flex; flex-direction: column; gap: 4px; }
+
+.pillarBadge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  border-radius: var(--radius-sm); padding: 3px 8px; width: fit-content;
+  border: 1px solid transparent;
+}
+.pageTitle    { font-size: 18px; font-weight: 700; color: var(--f5-N600); }
+.pageSubtitle { font-size: 13px; color: var(--f5-N500); }
+
+/* ── Summary strip ───────────────────────────────────────────────────────── */
+.summaryStrip {
+  display: flex; align-items: stretch;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 16px; overflow: hidden;
+  flex-wrap: wrap;
+}
+.summaryItem {
+  flex: 1; min-width: 120px;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 20px;
+  border-right: 1px solid var(--f5-N200);
+}
+.summaryItem:last-child { border-right: none; }
+.summaryLabel {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--f5-N400);
+}
+.summaryValue { font-size: 15px; font-weight: 700; }
+
+/* ── Body layout ─────────────────────────────────────────────────────────── */
+.body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px; align-items: start;
+}
+@media (max-width: 900px) { .body { grid-template-columns: 1fr; } }
+
+/* ── Panel heading ───────────────────────────────────────────────────────── */
+.panelHeading {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--f5-N400); margin-bottom: 8px;
+}
+
+/* ── Scan group list ─────────────────────────────────────────────────────── */
+.scanList { display: flex; flex-direction: column; gap: 8px; }
+
+.scanCard {
+  display: block; width: 100%; text-align: left;
+  background: var(--f5-N0); border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg); padding: 12px 14px;
+  cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.scanCard:hover {
+  border-color: var(--card-color, var(--f5-N300));
+  box-shadow: 0 2px 10px rgba(79,115,255,0.08);
+}
+.scanCardActive {
+  border-color: var(--card-color, var(--f5-blue));
+  border-left-width: 3px; padding-left: 11px;
+  background: var(--f5-N100);
+  box-shadow: 0 2px 12px rgba(79,115,255,0.12);
+}
+.scanCardTop {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 8px; margin-bottom: 6px;
+}
+.scanCardName { font-size: 12px; font-weight: 600; color: var(--f5-N600); }
+.scanCardAcct { font-size: 11px; color: var(--f5-N500); margin-top: 1px; }
+.scanCardRight { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.scanCardScore { font-size: 22px; font-weight: 800; line-height: 1; }
+.scanCardSparkline { margin: 4px 0; }
+.scanCardMeta {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--f5-N400); margin-top: 4px;
+}
+
+/* ── Detail panel ────────────────────────────────────────────────────────── */
+.detail { display: flex; flex-direction: column; gap: 12px; }
+
+.detailHeader {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 16px;
+  background: var(--f5-N0); border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg); padding: 14px 18px;
+}
+.detailTitle   { font-size: 15px; font-weight: 700; color: var(--f5-N600); margin-bottom: 3px; }
+.detailMeta    { font-size: 12px; color: var(--f5-N400); }
+.detailScoreWrap {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
+.detailScoreLabel {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase; color: var(--f5-N400);
+}
+.detailScore   { font-size: 36px; font-weight: 800; line-height: 1; }
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--f5-N0); border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-card);
+  padding: 14px 18px;
+}
+.cardTitle { font-size: 13px; font-weight: 700; color: var(--f5-N600); margin-bottom: 6px; }
+.cardSub   { font-size: 11px; color: var(--f5-N500); margin-bottom: 12px; margin-top: -2px; }
+
+/* ── Domain tags ─────────────────────────────────────────────────────────── */
+.domainTags { display: flex; flex-wrap: wrap; gap: 6px; }
+.domainTag {
+  font-size: 12px; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  background: var(--f5-N100); border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-sm); padding: 3px 10px; color: var(--f5-N600);
+}
+
+/* ── Trend chart ─────────────────────────────────────────────────────────── */
+.trendChart {
+  display: flex; align-items: flex-end; gap: 8px;
+  height: 90px; padding-top: 8px;
+}
+.trendBar {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1;
+}
+.trendBarTrack {
+  flex: 1; width: 100%; background: var(--f5-N200);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  display: flex; align-items: flex-end; overflow: hidden;
+  min-height: 4px;
+}
+.trendBarFill {
+  width: 100%; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height 0.3s ease;
+}
+.trendBarValue {
+  font-size: 11px; font-weight: 700; line-height: 1;
+}
+.trendBarLabel {
+  font-size: 9px; color: var(--f5-N400); white-space: nowrap;
+}
+.noTrend { font-size: 12px; color: var(--f5-N400); }
+
+/* ── Comparison table ────────────────────────────────────────────────────── */
+.compHead {
+  display: grid; grid-template-columns: 1fr 120px 60px 110px 80px;
+  padding: 7px 14px;
+  background: var(--f5-N100); border-radius: var(--radius-sm);
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--f5-N500); margin-bottom: 2px;
+}
+.compRow {
+  display: grid; grid-template-columns: 1fr 120px 60px 110px 80px;
+  padding: 10px 14px; border: none; border-radius: var(--radius-sm);
+  background: transparent; text-align: left; cursor: pointer;
+  width: 100%; align-items: center; font-size: 13px;
+  color: var(--f5-N600); transition: background 0.12s;
+}
+.compRow:hover    { background: var(--f5-N100); }
+.compRowActive    { background: var(--f5-blue-light) !important; }
+.compRowAlt       { background: var(--f5-N100); }
+.compName         { font-weight: 500; color: var(--f5-N600); }
+.compAcct         { font-size: 12px; color: var(--f5-N500); }
+.compScore        { font-size: 15px; font-weight: 800; }
+.compScoreNull    { font-size: 13px; color: var(--f5-N400); }
+.compAge          { font-size: 12px; color: var(--f5-N500); }
+
+/* ── Status chip ─────────────────────────────────────────────────────────── */
+.statusChip {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+}
+
+/* ── F5 promo strip ──────────────────────────────────────────────────────── */
+.promoStrip {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--f5-N0); border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg); padding: 12px 16px; flex-wrap: wrap;
+}
+.promoIcon {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: var(--radius-md); flex-shrink: 0;
+}
+.promoText { flex: 1; font-size: 13px; color: var(--f5-N600); line-height: 1.5; min-width: 200px; }
+.promoLink { font-size: 12px; font-weight: 600; color: var(--f5-blue); white-space: nowrap; text-decoration: none; }
+.promoLink:hover { text-decoration: underline; }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 12px; padding: 80px 24px; text-align: center;
+}
+.emptyIcon {
+  width: 64px; height: 64px; display: flex; align-items: center;
+  justify-content: center; background: var(--f5-N200); border-radius: 50%;
+}
+.emptyTitle { font-size: 16px; font-weight: 700; color: var(--f5-N600); }
+.emptySub   { font-size: 13px; color: var(--f5-N400); }

@@ -1,0 +1,315 @@
+.page {
+  padding: 24px;
+  max-width: 1100px;
+}
+
+/* ── Page header ── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  margin-bottom: 4px;
+}
+
+.pageSubtitle {
+  font-size: 13px;
+  color: var(--f5-N500);
+  max-width: 560px;
+  line-height: 1.5;
+}
+
+.addBtn {
+  height: 36px;
+  padding: 0 18px;
+  background: var(--f5-blue);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.addBtn:hover { background: var(--f5-blue-hover); }
+
+/* ── Add form ── */
+.addForm {
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.addFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) { .addFormGrid { grid-template-columns: 1fr; } }
+
+.formGroup { display: flex; flex-direction: column; gap: 5px; }
+
+.formLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--f5-N600);
+}
+
+.formInput {
+  height: 36px;
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  font-size: 13px;
+  color: var(--f5-N600);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.formInput:focus { border-color: var(--f5-blue); box-shadow: 0 0 0 3px var(--f5-blue-light); }
+
+.saveBtn {
+  height: 34px;
+  padding: 0 20px;
+  background: var(--f5-blue);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.saveBtn:hover { background: var(--f5-blue-hover); }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--f5-N200);
+  margin-bottom: 16px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--f5-N500);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.tab:hover { color: var(--f5-N600); }
+
+.tabActive {
+  color: var(--f5-blue);
+  font-weight: 700;
+  border-bottom-color: var(--f5-blue);
+}
+
+.tabCount {
+  background: var(--f5-N200);
+  color: var(--f5-N500);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.tabActive .tabCount {
+  background: var(--f5-blue-light);
+  color: var(--f5-blue);
+}
+
+/* ── List ── */
+.list {
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--f5-N0);
+}
+
+.empty {
+  padding: 32px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--f5-N400);
+  line-height: 1.6;
+}
+
+/* ── Account row ── */
+.row {
+  border-top: 1px solid var(--f5-N200);
+}
+.row:first-child { border-top: none; }
+
+.rowMain {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.rowMain:hover { background: var(--f5-N100); }
+
+.rowInfo { flex: 1; min-width: 0; }
+
+.rowName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  margin-bottom: 5px;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.industryBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--f5-purple-light);
+  color: #4a3a9e;
+}
+
+.metaDot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--f5-N300);
+  flex-shrink: 0;
+}
+
+.metaText { font-size: 11.5px; color: var(--f5-N500); }
+
+.domainCount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.domainNum  { font-size: 18px; font-weight: 700; color: var(--f5-N600); line-height: 1; }
+.domainLabel { font-size: 10px; color: var(--f5-N400); }
+
+.rowChevron {
+  display: flex;
+  color: var(--f5-N400);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.rowChevronOpen { transform: rotate(180deg); }
+
+/* ── Expanded ── */
+.rowExpanded {
+  padding: 0 20px 16px;
+  background: var(--f5-N100);
+  border-top: 1px solid var(--f5-N200);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.domainList {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+}
+
+.domainListLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--f5-N500);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.domainTag {
+  font-size: 11.5px;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  color: var(--f5-N600);
+}
+
+.rowActions {
+  display: flex;
+  gap: 8px;
+  padding-top: 14px;
+  flex-shrink: 0;
+}
+
+.btnEdit, .btnArchive, .btnRestore, .btnDelete {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.btnEdit {
+  background: none;
+  border: 1px solid var(--f5-N300);
+  color: var(--f5-N500);
+}
+.btnEdit:hover { border-color: var(--f5-blue); color: var(--f5-blue); }
+
+.btnArchive {
+  background: none;
+  border: 1px solid var(--f5-amber);
+  color: #7a5a00;
+}
+.btnArchive:hover { background: var(--f5-amber-light); }
+
+.btnRestore {
+  background: none;
+  border: 1px solid var(--f5-green);
+  color: #0c6f35;
+}
+.btnRestore:hover { background: var(--f5-green-light); }
+
+.btnDelete {
+  background: none;
+  border: 1px solid var(--f5-pomegranate);
+  color: var(--f5-pomegranate);
+}
+.btnDelete:hover { background: var(--f5-pomegranate-light); }

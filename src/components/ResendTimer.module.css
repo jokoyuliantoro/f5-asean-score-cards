@@ -1,0 +1,21 @@
+.text {
+  text-align: center;
+  font-size: 13px;
+  color: var(--f5-N500);
+  margin-top: 16px;
+}
+
+.btn {
+  background: none;
+  border: none;
+  color: var(--f5-blue);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn:hover {
+  color: var(--f5-blue-hover);
+  text-decoration: underline;
+}

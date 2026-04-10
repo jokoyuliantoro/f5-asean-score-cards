@@ -1,0 +1,214 @@
+/* ── Page shell ───────────────────────────────────────────────────────────── */
+.page { padding: 24px; max-width: 1300px; }
+
+/* ── Page header ─────────────────────────────────────────────────────────── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.pageTitleGroup { display: flex; flex-direction: column; gap: 4px; }
+
+.pillarBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--f5-purple);
+  background: var(--f5-purple-light);
+  border: 1px solid #d0c8ff;
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  width: fit-content;
+}
+
+.pageTitle    { font-size: 18px; font-weight: 700; color: var(--f5-N600); }
+.pageSubtitle { font-size: 13px; color: var(--f5-N500); }
+
+/* ── Scan group selector ─────────────────────────────────────────────────── */
+.scanGroupSelector { display: flex; flex-direction: column; gap: 4px; }
+.selectorLabel {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--f5-N500);
+}
+.selectWrap { position: relative; display: inline-flex; align-items: center; }
+.select {
+  appearance: none; -webkit-appearance: none;
+  background: var(--f5-N0); border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm); padding: 6px 32px 6px 12px;
+  font-size: 13px; color: var(--f5-N600); font-family: inherit;
+  cursor: pointer; outline: none; transition: border-color 0.15s; min-width: 240px;
+}
+.select:hover, .select:focus { border-color: var(--f5-blue); }
+.selectChevron {
+  position: absolute; right: 10px; pointer-events: none;
+  color: var(--f5-N400); display: flex; align-items: center;
+}
+.scanMeta { font-size: 11px; color: var(--f5-N500); }
+
+/* ── Score / stat strip ──────────────────────────────────────────────────── */
+.statStrip {
+  display: flex;
+  align-items: center;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 16px 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.scoreBlock {
+  display: flex; flex-direction: column; align-items: center;
+  padding-right: 20px; min-width: 80px;
+}
+.scoreValue  { font-size: 36px; font-weight: 800; line-height: 1; }
+.scoreLabel  { font-size: 11px; color: var(--f5-N500); margin-top: 4px; white-space: nowrap; }
+.statDivider { width: 1px; height: 40px; background: var(--f5-N200); margin: 0 16px; }
+.statItem    { display: flex; flex-direction: column; align-items: center; padding: 0 14px; }
+.statValue   { font-size: 22px; font-weight: 700; line-height: 1; }
+.statLabel   { font-size: 11px; color: var(--f5-N500); margin-top: 3px; white-space: nowrap; }
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.cardHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--f5-N200);
+  flex-wrap: wrap; gap: 8px;
+}
+.cardTitleRow { display: flex; align-items: center; gap: 8px; }
+.cardTitle    { font-size: 14px; font-weight: 700; color: var(--f5-N600); }
+.cardSub      { font-size: 12px; color: var(--f5-N500); }
+.pillBadge    {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  background: var(--f5-blue-light); color: var(--f5-blue);
+  border-radius: 10px; padding: 2px 8px;
+}
+.summaryRow   { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ── Table shared ─────────────────────────────────────────────────────────── */
+.tableHead {
+  display: grid;
+  padding: 8px 18px;
+  background: var(--f5-N100);
+  border-bottom: 1px solid var(--f5-N200);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--f5-N500);
+  grid-template-columns: 72px 1fr 90px 72px;
+}
+.tableRow {
+  display: grid;
+  grid-template-columns: 72px 1fr 90px 72px;
+  padding: 11px 18px;
+  border: none; border-bottom: 1px solid var(--f5-N200);
+  background: transparent; text-align: left; cursor: pointer;
+  width: 100%; align-items: center; transition: background 0.12s;
+  font-size: 13px; color: var(--f5-N600);
+}
+.tableRow:hover { background: var(--f5-N100) !important; }
+.tableRowOpen   { background: #f0f4ff !important; }
+.tableRowAlt    { background: var(--f5-N100); }
+
+.rowDetail {
+  padding: 10px 18px 12px 90px;
+  font-size: 12px; color: var(--f5-N500);
+  border-bottom: 1px solid var(--f5-N200);
+  background: #f8f9fd;
+}
+.detailLabel { font-weight: 600; color: var(--f5-N600); margin-right: 4px; }
+.rowName { color: var(--f5-N600); }
+
+/* ── Vuln findings table ─────────────────────────────────────────────────── */
+.tableHeadVulns {
+  grid-template-columns: 76px 80px 120px 1fr 110px 60px 80px;
+}
+.vulnRow {
+  display: grid;
+  grid-template-columns: 76px 80px 120px 1fr 110px 60px 80px;
+  padding: 11px 18px;
+  border: none; border-bottom: 1px solid var(--f5-N200);
+  background: transparent; text-align: left; cursor: pointer;
+  width: 100%; align-items: center; transition: background 0.12s;
+  font-size: 13px; color: var(--f5-N600);
+}
+.vulnRow:hover { background: var(--f5-N100) !important; }
+.vulnRowOpen   { background: #f0f4ff !important; }
+.vulnDetail {
+  padding: 10px 18px 12px 76px;
+  font-size: 12px; color: var(--f5-N500);
+  border-bottom: 1px solid var(--f5-N200);
+  background: #f8f9fd;
+}
+
+.sevBadge {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  display: inline-block;
+}
+.catLabel    { color: var(--f5-blue); font-size: 12px; }
+.vulnTitle   { color: var(--f5-N600); font-weight: 500; }
+.cvssScore   { font-weight: 700; font-size: 13px; }
+.cveLink     { color: var(--f5-blue); font-size: 11px; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; }
+
+.statusChip {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: var(--radius-sm);
+  display: inline-block;
+}
+.statusChip[data-status="open"]   { background: var(--f5-pomegranate-light); color: var(--f5-pomegranate); }
+.statusChip[data-status="review"] { background: var(--f5-blue-light);        color: var(--f5-blue);        }
+
+/* ── Risk summary grid ───────────────────────────────────────────────────── */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.categoryList { padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; }
+.categoryRow  { display: flex; align-items: center; gap: 10px; }
+.categoryName { font-size: 13px; color: var(--f5-N600); min-width: 130px; }
+.categoryBar  { flex: 1; height: 6px; background: var(--f5-N200); border-radius: 3px; overflow: hidden; }
+.categoryBarFill { height: 100%; background: var(--f5-red); border-radius: 3px; transition: width 0.3s; }
+.categoryCount { font-size: 13px; font-weight: 700; color: var(--f5-N600); min-width: 20px; text-align: right; }
+
+.remList { padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; }
+.remItem { padding: 10px 14px; border-left: 3px solid; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--f5-N100); display: flex; flex-direction: column; gap: 4px; }
+.remLabel { font-size: 12px; font-weight: 700; }
+.remIds   { font-size: 12px; color: var(--f5-N500); }
+
+/* ── Shared atoms ─────────────────────────────────────────────────────────── */
+.pill {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 2px 10px; border-radius: 20px; white-space: nowrap;
+}
+.riskBadge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: var(--radius-sm); white-space: nowrap;
+}
+.mono { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 12px; color: var(--f5-N500); }
+.muted { color: var(--f5-N400); }
+
+@media (max-width: 900px) {
+  .summaryGrid { grid-template-columns: 1fr; }
+  .vulnRow, .tableHeadVulns { grid-template-columns: 76px 80px 1fr 60px 80px; }
+  .vulnRow > *:nth-child(3),
+  .tableHeadVulns > *:nth-child(3) { display: none; }
+}

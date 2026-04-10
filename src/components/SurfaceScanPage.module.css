@@ -1,0 +1,313 @@
+/* ── Page shell ───────────────────────────────────────────────────────────── */
+.page {
+  padding: 24px;
+  max-width: 1300px;
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.pageTitleGroup { display: flex; flex-direction: column; gap: 4px; }
+
+.pillarBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--f5-pomegranate);
+  background: var(--f5-pomegranate-light);
+  border: 1px solid #ffc2b8;
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  width: fit-content;
+}
+
+.pageTitle    { font-size: 18px; font-weight: 700; color: var(--f5-N600); }
+.pageSubtitle { font-size: 13px; color: var(--f5-N500); }
+
+/* ── Scan group selector ─────────────────────────────────────────────────── */
+.scanGroupSelector { display: flex; flex-direction: column; gap: 4px; }
+
+.selectorLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--f5-N500);
+}
+
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  padding: 6px 32px 6px 12px;
+  font-size: 13px;
+  color: var(--f5-N600);
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 240px;
+}
+.select:hover, .select:focus { border-color: var(--f5-blue); }
+
+.selectChevron {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--f5-N400);
+  display: flex;
+  align-items: center;
+}
+
+.scanMeta {
+  font-size: 11px;
+  color: var(--f5-N500);
+}
+
+/* ── Score / stat strip ──────────────────────────────────────────────────── */
+.statStrip {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 16px 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scoreBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-right: 20px;
+  min-width: 80px;
+}
+.scoreValue {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+.scoreLabel {
+  font-size: 11px;
+  color: var(--f5-N500);
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+.statDivider {
+  width: 1px;
+  height: 40px;
+  background: var(--f5-N200);
+  margin: 0 16px;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 14px;
+}
+.statValue {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.statLabel {
+  font-size: 11px;
+  color: var(--f5-N500);
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--f5-N200);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--f5-N600);
+}
+
+.cardSub {
+  font-size: 12px;
+  color: var(--f5-N500);
+}
+
+.pillBadge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: var(--f5-blue-light);
+  color: var(--f5-blue);
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+
+.owaspSummary {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Table shared ─────────────────────────────────────────────────────────── */
+.tableHead {
+  display: grid;
+  padding: 8px 18px;
+  background: var(--f5-N100);
+  border-bottom: 1px solid var(--f5-N200);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--f5-N500);
+  grid-template-columns: 72px 1fr 90px 72px;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 72px 1fr 90px 72px;
+  padding: 11px 18px;
+  border: none;
+  border-bottom: 1px solid var(--f5-N200);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  align-items: center;
+  transition: background 0.12s;
+  font-size: 13px;
+  color: var(--f5-N600);
+}
+.tableRow:hover { background: var(--f5-N100) !important; }
+.tableRowOpen   { background: #f0f4ff !important; }
+.tableRowAlt    { background: var(--f5-N100); }
+
+.tableRowDetail {
+  padding: 10px 18px 12px 90px;
+  font-size: 12px;
+  color: var(--f5-N500);
+  border-bottom: 1px solid var(--f5-N200);
+  background: #f8f9fd;
+}
+.detailLabel {
+  font-weight: 600;
+  color: var(--f5-N600);
+  margin-right: 4px;
+}
+
+.rowName { color: var(--f5-N600); }
+
+/* ── Port table ──────────────────────────────────────────────────────────── */
+.tableHeadPorts {
+  grid-template-columns: 60px 60px 80px 80px 80px 1fr;
+}
+.portRow {
+  display: grid;
+  grid-template-columns: 60px 60px 80px 80px 80px 1fr;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--f5-N200);
+  align-items: center;
+  font-size: 13px;
+  color: var(--f5-N600);
+}
+
+.statePill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+}
+.statePill[data-state="open"]     { background: var(--f5-green-light); color: #1a7a3a; }
+.statePill[data-state="filtered"] { background: var(--f5-blue-light);  color: var(--f5-blue); }
+.statePill[data-state="closed"]   { background: var(--f5-pomegranate-light); color: var(--f5-pomegranate); }
+
+.serviceLabel { color: var(--f5-blue); font-weight: 500; }
+
+/* ── Header table ─────────────────────────────────────────────────────────── */
+.tableHeadHeaders {
+  grid-template-columns: 240px 1fr 72px;
+}
+.headerRow {
+  display: grid;
+  grid-template-columns: 240px 1fr 72px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--f5-N200);
+  align-items: center;
+  font-size: 13px;
+}
+.headerValue      { color: var(--f5-N600); }
+.headerValueFail  { color: var(--f5-N400); font-style: italic; }
+
+/* ── Shared atoms ─────────────────────────────────────────────────────────── */
+.pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.riskBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.mono {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  color: var(--f5-N500);
+}
+
+.muted { color: var(--f5-N500); font-size: 12px; }

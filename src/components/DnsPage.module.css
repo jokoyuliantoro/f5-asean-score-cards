@@ -1,0 +1,469 @@
+/* ── Page shell ───────────────────────────────────────────────────────────── */
+.page {
+  padding: 24px;
+  max-width: 1300px;
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.pageTitleGroup { display: flex; flex-direction: column; gap: 4px; }
+
+.pillarBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--f5-blue);
+  background: var(--f5-blue-light);
+  border: 1px solid #c6d0ff;
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  width: fit-content;
+}
+
+.pageTitle    { font-size: 18px; font-weight: 700; color: var(--f5-N600); }
+.pageSubtitle { font-size: 13px; color: var(--f5-N500); }
+
+/* ── Scan group selector ─────────────────────────────────────────────────── */
+.scanGroupSelector { display: flex; flex-direction: column; gap: 4px; }
+
+.selectorLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--f5-N500);
+}
+
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  padding: 6px 32px 6px 12px;
+  font-size: 13px;
+  color: var(--f5-N600);
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 240px;
+}
+.select:hover, .select:focus { border-color: var(--f5-blue); }
+
+.selectChevron {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--f5-N400);
+  display: flex;
+  align-items: center;
+}
+
+/* ── Context bar ─────────────────────────────────────────────────────────── */
+.contextBar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.contextItem  { display: flex; align-items: center; gap: 6px; }
+.contextDot   { width: 6px; height: 6px; border-radius: 50%; background: var(--f5-green); flex-shrink: 0; }
+.contextSep   { width: 1px; height: 16px; background: var(--f5-N200); flex-shrink: 0; }
+
+.contextKey {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--f5-N400);
+}
+.contextVal { font-size: 13px; color: var(--f5-N600); font-weight: 500; }
+
+/* ── Body layout ─────────────────────────────────────────────────────────── */
+.body {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .body { grid-template-columns: 1fr; }
+}
+
+/* ── Panel heading ───────────────────────────────────────────────────────── */
+.panelHeading {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--f5-N400);
+  margin-bottom: 8px;
+}
+
+/* ── Domain list ─────────────────────────────────────────────────────────── */
+.domainList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.domainCard {
+  display: block;
+  width: 100%;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: none;
+}
+.domainCard:hover {
+  border-color: var(--card-accent, var(--f5-N300));
+  box-shadow: 0 2px 10px rgba(79, 115, 255, 0.08);
+}
+.domainCardActive {
+  border-color: var(--card-accent, var(--f5-blue));
+  border-left-width: 3px;
+  padding-left: 11px;
+  background: var(--f5-N100);
+  box-shadow: 0 2px 12px rgba(79, 115, 255, 0.12);
+}
+
+.domainCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.domainName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--f5-N600);
+  word-break: break-all;
+}
+.domainScore {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.domainDims { display: flex; flex-direction: column; gap: 5px; }
+.domainDimRow {
+  display: grid;
+  grid-template-columns: 90px 1fr 28px;
+  align-items: center;
+  gap: 6px;
+}
+.domainDimLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--f5-N500);
+  white-space: nowrap;
+}
+.domainDimScore {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ── Score bar ───────────────────────────────────────────────────────────── */
+.scoreBar {
+  height: 4px;
+  background: var(--f5-N200);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.scoreBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ── Score badges ────────────────────────────────────────────────────────── */
+.badgeSM {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.badgeMD {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+/* ── Detail panel ────────────────────────────────────────────────────────── */
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+}
+
+.detailDomain {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  margin-bottom: 2px;
+}
+.detailHint {
+  font-size: 12px;
+  color: var(--f5-N400);
+}
+
+.overallBadgeWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.overallLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--f5-N400);
+}
+.overallScore {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ── Dimensions ──────────────────────────────────────────────────────────── */
+.dimensions { display: flex; flex-direction: column; gap: 8px; }
+
+.dimPanel {
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.dimPanel:hover {
+  border-color: var(--dim-color, var(--f5-N300));
+  box-shadow: 0 2px 10px rgba(79, 115, 255, 0.07);
+}
+.dimPanelActive {
+  border-color: var(--dim-color, var(--f5-blue));
+  border-left-width: 3px;
+  padding-left: 13px;
+  box-shadow: 0 2px 14px rgba(79, 115, 255, 0.10);
+}
+
+.dimHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.dimLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--f5-N600);
+}
+
+/* ── Expanded dim body ───────────────────────────────────────────────────── */
+.dimBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--f5-N200);
+  animation: fadeSlideIn 0.18s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Metric chips ────────────────────────────────────────────────────────── */
+.dimMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.metricChip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--f5-N100);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  min-width: 90px;
+}
+.metricLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--f5-N400);
+}
+.metricValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--f5-N600);
+}
+
+/* ── Findings list ───────────────────────────────────────────────────────── */
+.findingsList { display: flex; flex-direction: column; gap: 6px; }
+
+.findingRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.findingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.findingText {
+  font-size: 13px;
+  color: var(--f5-N600);
+  line-height: 1.5;
+}
+
+/* ── Recommendation ──────────────────────────────────────────────────────── */
+.recommendation {
+  background: var(--f5-blue-light);
+  border: 1px solid #c6d0ff;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+.recLabel {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--f5-blue);
+  margin-bottom: 4px;
+}
+.recText {
+  font-size: 13px;
+  color: var(--f5-N600);
+  line-height: 1.55;
+}
+
+/* ── F5 XC Promo strip ───────────────────────────────────────────────────── */
+.promoStrip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--f5-N0);
+  border: 1px solid #c6d0ff;
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  flex-wrap: wrap;
+}
+.promoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--f5-blue-light);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+.promoText {
+  flex: 1;
+  font-size: 13px;
+  color: var(--f5-N600);
+  line-height: 1.5;
+  min-width: 200px;
+}
+.promoText strong { color: var(--f5-blue); }
+.promoLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--f5-blue);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.promoLink:hover { text-decoration: underline; }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 24px;
+  text-align: center;
+}
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--f5-N200);
+  border-radius: 50%;
+}
+.emptyTitle { font-size: 16px; font-weight: 700; color: var(--f5-N600); }
+.emptySub   { font-size: 13px; color: var(--f5-N400); }

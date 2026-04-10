@@ -1,0 +1,50 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.prefix {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  white-space: nowrap;
+}
+
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--f5-N0);
+  border: 1.5px solid var(--f5-N300);
+  border-radius: var(--radius-md);
+  padding: 5px 32px 5px 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--f5-blue);
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 160px;
+}
+
+.select:focus,
+.select:hover {
+  border-color: var(--f5-blue);
+}
+
+.chevron {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--f5-blue);
+  display: flex;
+  align-items: center;
+}

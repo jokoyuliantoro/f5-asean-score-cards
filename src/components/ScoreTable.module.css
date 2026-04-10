@@ -1,0 +1,98 @@
+.panel {
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.panelHeader {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--f5-N200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panelTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--f5-N600);
+}
+
+.panelSubtitle {
+  font-size: 12px;
+  color: var(--f5-N500);
+  margin-top: 2px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  background: var(--f5-N100);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--f5-N500);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 10px 20px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 20px;
+  color: var(--f5-N600);
+  border-top: 1px solid var(--f5-N200);
+  white-space: nowrap;
+}
+
+.table tbody tr:hover td {
+  background: var(--f5-N100);
+}
+
+.scoreCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.barWrap {
+  width: 90px;
+  height: 7px;
+  background: var(--f5-N200);
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.badgeGreen  { background: var(--f5-green-light);       color: #0c6f35; }
+.badgePurple { background: var(--f5-purple-light);      color: #4a3a9e; }
+.badgeAmber  { background: var(--f5-amber-light);       color: #7a5a00; }
+.badgeRed    { background: var(--f5-pomegranate-light); color: #9e2a10; }
+
+.trend {
+  font-weight: 600;
+}

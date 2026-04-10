@@ -1,0 +1,256 @@
+/* ── Section wrapper ── */
+.section {
+  margin-bottom: 20px;
+}
+
+/* ── Collapsible header (button) ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0 0 10px 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.header:hover .sectionTitle { color: var(--f5-blue); }
+
+/* Triangle toggle */
+.triangle {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top:   5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid var(--f5-N400);
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+.triangleOpen {
+  transform: rotate(90deg);
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  transition: color 0.15s;
+}
+
+.sectionSub {
+  font-size: 12px;
+  color: var(--f5-N400);
+}
+
+/* ── 3-column card grid ── */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 12px;
+}
+@media (max-width: 900px) { .strip { grid-template-columns: 1fr; } }
+
+/* ── Issue card (now a button) ── */
+.card {
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  border-left: 4px solid transparent;
+  border-top: 1px solid transparent;
+  border-right: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.cardActive { box-shadow: 0 0 0 2px currentColor; outline: none; }
+
+.sevCritical {
+  background: #fff5f4;
+  border-left-color: var(--f5-pomegranate);
+  border-top-color: #ffd4cc; border-right-color: #ffd4cc; border-bottom-color: #ffd4cc;
+  color: var(--f5-pomegranate);
+}
+.sevHigh {
+  background: var(--f5-amber-light);
+  border-left-color: var(--f5-amber);
+  border-top-color: #f0d97a; border-right-color: #f0d97a; border-bottom-color: #f0d97a;
+  color: var(--f5-amber);
+}
+.sevMedium {
+  background: var(--f5-blue-light);
+  border-left-color: var(--f5-blue);
+  border-top-color: #c6d0ff; border-right-color: #c6d0ff; border-bottom-color: #c6d0ff;
+  color: var(--f5-blue);
+}
+.sevLow {
+  background: var(--f5-N100);
+  border-left-color: var(--f5-N300);
+  border-top-color: var(--f5-N200); border-right-color: var(--f5-N200); border-bottom-color: var(--f5-N200);
+  color: var(--f5-N500);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sevBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+.sevBadgeLg {
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
+.sevCritical .sevBadge { background: var(--f5-pomegranate-light); color: #9e2a10; }
+.sevHigh .sevBadge     { background: #ffe8a0; color: #7a5a00; }
+.sevMedium .sevBadge   { background: #c8d8ff; color: #2040a0; }
+.sevLow .sevBadge      { background: var(--f5-N300); color: var(--f5-N600); }
+
+.pillarTag {
+  font-size: 11px;
+  color: var(--f5-N500);
+  font-weight: 500;
+}
+
+.issueTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--f5-N600);
+  line-height: 1.4;
+}
+
+.meta { display: flex; flex-direction: column; gap: 2px; }
+
+.metaLine   { font-size: 11.5px; color: var(--f5-N500); }
+.metaDomain { font-size: 11px; color: var(--f5-N400); font-family: 'SFMono-Regular', Consolas, monospace; }
+.metaTime   { font-size: 11px; color: var(--f5-N400); }
+
+.cardCta {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 2px;
+  /* inherits color from severity class */
+}
+
+/* ── Detail panel ── */
+.detailPanel {
+  border-radius: var(--radius-lg);
+  border-left: 4px solid;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  animation: slideDown 0.18s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sevCritical.detailPanel { background: #fff0ee; border-left-color: var(--f5-pomegranate); }
+.sevHigh.detailPanel     { background: #fffae6; border-left-color: var(--f5-amber); }
+.sevMedium.detailPanel   { background: #f0f3ff; border-left-color: var(--f5-blue); }
+.sevLow.detailPanel      { background: var(--f5-N100); border-left-color: var(--f5-N300); }
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.detailTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.detailPillar {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--f5-N500);
+  padding-top: 3px;
+}
+
+.detailTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  line-height: 1.4;
+}
+
+.closeBtn {
+  background: none;
+  border: 1px solid var(--f5-N300);
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--f5-N500);
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+.closeBtn:hover { border-color: var(--f5-pomegranate); color: var(--f5-pomegranate); }
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 900px) { .detailGrid { grid-template-columns: repeat(2, 1fr); } }
+
+.detailBlock { display: flex; flex-direction: column; gap: 3px; }
+.detailBlockLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--f5-N400);
+}
+.detailBlockValue {
+  font-size: 13px;
+  color: var(--f5-N600);
+  font-weight: 500;
+}
+
+.detailRemediation {
+  background: rgba(255,255,255,0.6);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+.detailRemLabel {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--f5-N500);
+  margin-bottom: 4px;
+}
+.detailRemText {
+  font-size: 13px;
+  color: var(--f5-N600);
+  line-height: 1.55;
+}

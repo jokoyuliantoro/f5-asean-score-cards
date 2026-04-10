@@ -1,0 +1,293 @@
+/* ── Section wrapper ── */
+.section { margin-bottom: 24px; }
+
+/* ── Collapsible section header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.headerToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  flex: 1;
+}
+.headerToggle:hover .sectionTitle { color: var(--f5-blue); }
+
+/* Section-level triangle */
+.triangle {
+  display: inline-block;
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid var(--f5-N400);
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+.triangleOpen { transform: rotate(90deg); }
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  transition: color 0.15s;
+}
+.sectionSub { font-size: 12px; color: var(--f5-N400); }
+
+.newScanBtn {
+  height: 32px;
+  padding: 0 16px;
+  background: var(--f5-blue);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.newScanBtn:hover { background: var(--f5-blue-hover); }
+
+/* ── List container ── */
+.list {
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--f5-N0);
+}
+
+/* ── Row (button) ── */
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 20px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--f5-N200);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.12s;
+}
+.row:first-child { border-top: none; }
+.row:hover { background: var(--f5-N100); }
+.rowActive { background: var(--f5-blue-light) !important; }
+
+/* Row-level triangle (left of the name) */
+.rowTriangle {
+  display: inline-block;
+  width: 0; height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid var(--f5-N400);
+  transition: transform 0.16s ease;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.rowTriangleOpen { transform: rotate(90deg); }
+
+/* ── Row left block ── */
+.rowLeft {
+  flex: 0 0 260px;
+  min-width: 0;
+}
+
+.sgName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  margin-bottom: 4px;
+}
+.sgMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.accountName { font-size: 11.5px; font-weight: 600; color: var(--f5-blue); }
+.dot         { width: 3px; height: 3px; border-radius: 50%; background: var(--f5-N300); flex-shrink: 0; }
+.domains     { font-size: 11px; color: var(--f5-N500); font-family: 'SFMono-Regular', Consolas, monospace; }
+.time        { font-size: 11px; color: var(--f5-N400); }
+
+/* ── Pillar status cells (inside the row) ── */
+.pillars {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+@media (max-width: 1000px) {
+  .row { flex-direction: column; }
+  .rowLeft { flex: none; width: 100%; }
+  .pillars { grid-template-columns: repeat(2, 1fr); }
+}
+
+.pillarCell   { display: flex; flex-direction: column; gap: 3px; }
+.pillarName   { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--f5-N400); }
+.pillarScore  { font-size: 16px; font-weight: 700; line-height: 1; }
+.pillarStatus {
+  font-size: 11px; font-weight: 500; padding: 2px 7px;
+  border-radius: 10px; display: inline-block; width: fit-content;
+}
+
+.statusDone     { background: var(--f5-green-light);       color: #0c6f35; }
+.statusProgress { background: var(--f5-blue-light);        color: var(--f5-blue); }
+.statusQueued   { background: var(--f5-amber-light);       color: #7a5a00; }
+.statusNone     { background: var(--f5-N200);              color: var(--f5-N500); }
+.statusFailed   { background: var(--f5-pomegranate-light); color: #9e2a10; }
+
+/* ── Pagination ── */
+.pagination {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 12px; margin-top: 10px;
+}
+.pageBtn {
+  height: 30px; padding: 0 14px; background: none;
+  border: 1px solid var(--f5-N300); border-radius: var(--radius-sm);
+  font-size: 12px; color: var(--f5-N500); cursor: pointer;
+  font-family: inherit; transition: border-color 0.15s, color 0.15s;
+}
+.pageBtn:hover:not(:disabled) { border-color: var(--f5-blue); color: var(--f5-blue); }
+.pageBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pageInfo { font-size: 12px; color: var(--f5-N400); }
+
+/* ── Empty state ── */
+.empty {
+  padding: 24px; text-align: center; font-size: 13px; color: var(--f5-N400);
+  background: var(--f5-N0); border: 1px solid var(--f5-N200); border-radius: var(--radius-lg);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   REPORT OVERVIEW — appears BELOW the full list + pagination
+   ════════════════════════════════════════════════════════════════════════════ */
+.reportOverview {
+  margin-top: 16px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Header strip */
+.overviewHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.overviewHeaderLeft { display: flex; flex-direction: column; gap: 3px; }
+.overviewScanName   { font-size: 15px; font-weight: 700; color: var(--f5-N600); }
+.overviewMeta       { font-size: 12px; color: var(--f5-N400); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.overviewDot        { width: 3px; height: 3px; border-radius: 50%; background: var(--f5-N300); flex-shrink: 0; }
+.overviewHint       { font-size: 12px; color: var(--f5-N400); font-style: italic; white-space: nowrap; }
+
+/* ── 4-pillar card grid (matches Sample Reports style) ── */
+.overviewPillars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 1100px) { .overviewPillars { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px)  { .overviewPillars { grid-template-columns: 1fr; } }
+
+/* Pillar card — mirrors PillarCard.jsx styling exactly */
+.pillarCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--f5-N0);
+  border: 1.5px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  width: 100%;
+  font-family: inherit;
+}
+.pillarCard:hover:not(:disabled) {
+  border-color: var(--pc-color, var(--f5-blue));
+  box-shadow: 0 4px 16px rgba(79, 115, 255, 0.12);
+  transform: translateY(-1px);
+}
+.pillarCard:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+.pillarCardActive {
+  border-color: var(--pc-color, var(--f5-blue));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pc-color, var(--f5-blue)) 18%, transparent);
+  transform: translateY(-1px);
+}
+
+.pcTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.pcIcon  { display: flex; align-items: center; }
+.pcBadge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; letter-spacing: 0.2px;
+}
+.badgeGreen  { background: var(--f5-green-light);       color: #0c6f35; }
+.badgeBlue   { background: var(--f5-blue-light);        color: var(--f5-blue); }
+.badgeAmber  { background: var(--f5-amber-light);       color: #7a5a00; }
+.badgeRed    { background: var(--f5-pomegranate-light); color: #9e2a10; }
+
+.pcLabel { font-size: 15px; font-weight: 700; color: var(--f5-N600); line-height: 1.2; }
+.pcDesc  { font-size: 11.5px; color: var(--f5-N400); line-height: 1.4; }
+
+.pcScoreRow    { display: flex; align-items: baseline; gap: 2px; margin-top: 4px; }
+.pcScoreNum    { font-size: 28px; font-weight: 700; line-height: 1; }
+.pcScoreOf     { font-size: 12px; color: var(--f5-N400); }
+
+.pcBarTrack    { height: 6px; background: var(--f5-N200); border-radius: 3px; overflow: hidden; }
+.pcBarFill     { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+.pcCta         { font-size: 12px; font-weight: 600; color: var(--f5-N400); margin-top: 4px; }
+.pillarCard:hover:not(:disabled) .pcCta,
+.pillarCardActive .pcCta         { color: var(--pc-color, var(--f5-blue)); }
+
+.pcNoScore     { font-size: 12px; color: var(--f5-N400); margin-top: 4px; }
+
+/* ── Active pillar detail block ── */
+.pillarDetail {
+  background: var(--f5-N0);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  animation: slideDown 0.15s ease;
+}
+.pillarDetailHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.pillarDetailIcon   { display: flex; align-items: center; padding-top: 2px; }
+.pillarDetailTitle  { font-size: 15px; font-weight: 700; color: var(--f5-N600); margin-bottom: 3px; }
+.pillarDetailSub    { font-size: 13px; color: var(--f5-N500); }
+.pillarDetailNote   { font-size: 13px; color: var(--f5-N600); line-height: 1.6; }

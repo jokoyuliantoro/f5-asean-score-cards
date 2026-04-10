@@ -1,0 +1,274 @@
+.wrapper {
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-lg);
+  background: var(--f5-N0);
+  overflow: hidden;
+  animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Banner ── */
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--f5-N600);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bannerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sampleTag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  background: var(--f5-amber);
+  color: #000;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.bannerTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.bannerMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--f5-N400);
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--f5-N400);
+}
+
+/* ── Score strip ── */
+.scoreStrip {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 20px;
+  background: var(--f5-N100);
+  border-bottom: 1px solid var(--f5-N200);
+}
+
+.scoreBlock {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.scoreLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--f5-N500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 8px;
+}
+
+.scoreBig {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  line-height: 1;
+}
+
+.scoreMax {
+  font-size: 14px;
+  color: var(--f5-N400);
+}
+
+.disclaimer {
+  font-size: 12px;
+  color: var(--f5-N400);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── Body ── */
+.body {
+  padding: 20px;
+}
+
+.summary {
+  font-size: 13.5px;
+  color: var(--f5-N600);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--f5-N200);
+}
+
+/* ── Dimension grid (DNS / HTTPS) ── */
+.dimGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 960px) {
+  .dimGrid { grid-template-columns: 1fr; }
+}
+
+.dimCard {
+  background: var(--f5-N100);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dimHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dimLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--f5-N600);
+}
+
+.scorePill {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ── Finding list (DNS/HTTPS sub-items) ── */
+.findingList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.findingItem {
+  font-size: 12px;
+  color: var(--f5-N600);
+  line-height: 1.45;
+  padding-left: 12px;
+  position: relative;
+}
+
+.findingItem::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: var(--f5-N400);
+}
+
+/* ── Recommendation block ── */
+.recommendation {
+  font-size: 12px;
+  color: var(--f5-N600);
+  background: var(--f5-blue-light);
+  border-left: 3px solid var(--f5-blue);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 8px 10px;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.recLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--f5-blue);
+}
+
+/* ── Finding table (Surface / Deep scan) ── */
+.findingTable {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.findingRow {
+  background: var(--f5-N100);
+  border: 1px solid var(--f5-N200);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.findingMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sevBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sevCritical { background: #ffdad4; color: #9e2a10; }
+.sevHigh     { background: var(--f5-amber-light); color: #7a5a00; }
+.sevMedium   { background: var(--f5-blue-light); color: var(--f5-blue); }
+.sevLow      { background: var(--f5-N200); color: var(--f5-N500); }
+
+.findingAffected {
+  font-size: 11px;
+  color: var(--f5-N500);
+  font-family: 'SFMono-Regular', Consolas, monospace;
+}
+
+.findingTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--f5-N600);
+}
+
+.findingDetail {
+  font-size: 12.5px;
+  color: var(--f5-N600);
+  line-height: 1.5;
+}
+
+/* ── Run info ── */
+.runInfo {
+  font-size: 11px;
+  color: var(--f5-N400);
+  text-align: right;
+  margin-top: 4px;
+}
