@@ -26,6 +26,17 @@ resource "aws_apigatewayv2_stage" "main" {
   auto_deploy = true
 
   access_log_settings {
+    format = jsonencode({
+      requestId      = "$context.requestId"
+      sourceIp       = "$context.identity.sourceIp"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
+      responseLength = "$context.responseLength"
+      errorMessage   = "$context.error.message"
+    })
     destination_arn = aws_cloudwatch_log_group.api_gw.arn
   }
 }
