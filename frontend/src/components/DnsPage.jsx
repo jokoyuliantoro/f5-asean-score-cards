@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
-import { SCAN_GROUPS, ACCOUNTS, scoreColor, fmtTimestamp, daysAgo } from '../data/appData';
+import { useState } from 'react';
+import { runDnsDiscovery } from '../api/discovery';
+import { scoreColor, fmtTimestamp } from '../data/appData';
 import styles from './DnsPage.module.css';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -11,99 +12,114 @@ const DIMENSION_LABELS = {
   responseTime: 'Response Time',
 };
 
-// Derive realistic per-domain, per-dimension DNS data from appData SCAN_GROUPS.
-// In a real app this would come from an API. Here we generate deterministic
-// pseudo-data from the scan group's overall dns score so all pages stay coherent.
-function deriveDnsData(scanGroup) {
-  if (!scanGroup) return null;
-  const base = scanGroup.pillars.dns.score ?? 0;
+/**
+ * Map raw API findings → display data for the three DNS dimensions.
+ * The API returns structured facts; we interpret them into scores + findings text.
+ */
+function buildDnsDisplayData(domain, findings) {
+  const { score, ttl, ttlScore, nsCount, nsGeoRedundant, dnssec, caaPresent,
+          soaRefresh, A = [], AAAA = [], issues = [] } = findings;
 
-  return scanGroup.domains.map((domain, di) => {
-    // Spread domains across a ±12 range so each feels different
-    const offset = [0, -8, +6, -4][di % 4];
-    const domainBase = Math.min(99, Math.max(30, base + offset));
+  // ── Resilience: NS redundancy, DNSSEC, CAA, geo ──────────────────────────
+  const hasGeoNS    = nsGeoRedundant === true;
+  const hasDnssec   = dnssec === true;
+  const hasCaa      = caaPresent === true;
+  const resScore    = Math.min(99, Math.round(
+    (hasGeoNS ? 35 : 15) + (hasDnssec ? 30 : 0) + (hasCaa ? 15 : 0) + (nsCount >= 4 ? 10 : 5)
+  ));
 
-    const resilience   = Math.min(99, Math.max(30, domainBase - 7 + (di * 3 % 11)));
-    const stability    = Math.min(99, Math.max(30, domainBase + 4 - (di * 2 % 9)));
-    const responseTime = Math.min(99, Math.max(30, domainBase + 2 + (di * 5 % 7)));
+  // ── Stability: TTL, SOA refresh, dual-stack ───────────────────────────────
+  const goodTtl     = ttlScore === 'high';       // ≤300s = modern fast-failover
+  const dualStack   = AAAA.length > 0;
+  const goodSoa     = soaRefresh <= 3600;
+  const stabScore   = Math.min(99, Math.round(
+    (goodTtl ? 40 : 20) + (dualStack ? 30 : 10) + (goodSoa ? 20 : 10)
+  ));
 
-    const scores = { resilience, stability, responseTime };
+  // ── Response Time: inferred from A record count and NS count ─────────────
+  const rtScore     = Math.min(99, Math.round(
+    Math.min(40, A.length * 7) + Math.min(40, nsCount * 10) + (hasGeoNS ? 15 : 5)
+  ));
 
-    // Build per-dimension detail rows
-    const details = {
-      resilience: {
-        findings: [
-          resilience < 70
-            ? 'Single authoritative NS cluster — no geographic redundancy in ASEAN'
-            : 'Dual NS clusters active (Singapore + Hong Kong)',
-          resilience < 60
-            ? 'DNSSEC not configured on this zone'
-            : resilience < 80
-            ? 'DNSSEC partial — zone signed, DS record not published at parent'
-            : 'DNSSEC fully configured and chain of trust verified',
-          resilience < 65
-            ? 'TTL values set to 60s — too low for failover stability'
-            : 'TTL values appropriate (3600s for A/AAAA records)',
-        ],
-        recommendation:
-          resilience < 70
-            ? 'Deploy a secondary NS cluster in Jakarta or Manila. Extend TTL to ≥3600s for stability. Enable DNSSEC to prevent cache poisoning.'
-            : 'Consider adding a third NS location to improve geographic diversity. Monitor DNSSEC key rollover schedule.',
-        metrics: [
-          { label: 'NS Clusters',     value: resilience >= 70 ? '2' : '1',      unit: ' location(s)' },
-          { label: 'DNSSEC Status',   value: resilience >= 80 ? 'Full' : resilience >= 65 ? 'Partial' : 'None', unit: '' },
-          { label: 'SOA TTL',         value: resilience >= 65 ? '3600' : '300', unit: 's' },
-          { label: 'Delegation Check',value: resilience >= 75 ? 'Pass' : 'Fail', unit: '' },
-        ],
-      },
-      stability: {
-        findings: [
-          stability >= 80
-            ? 'Zero NXDOMAIN storms observed over 30-day window'
-            : 'Elevated NXDOMAIN rate detected — 1.2% of queries returning NXDOMAIN',
-          stability >= 75
-            ? 'SOA serial increments consistent — no zone transfer anomalies'
-            : 'Zone transfer inconsistency detected between primary and secondary NS',
-          stability < 70
-            ? `${(3.1 - stability / 50).toFixed(1)}% query failure rate during peak hours (23:00–01:00 SGT)`
-            : '0.2% query failure rate during peak hours — within acceptable range',
-        ],
-        recommendation:
-          stability < 75
-            ? 'Investigate peak-hour failure rate — likely upstream resolver timeout. Audit zone transfer configuration. Consider Anycast-backed resolver for resilience.'
-            : 'Monitor SOA serial consistency. Set up automated alerting for NXDOMAIN rate spikes above 0.5%.',
-        metrics: [
-          { label: 'NXDOMAIN Rate',   value: stability >= 80 ? '0.0%' : stability >= 70 ? '0.4%' : '1.2%', unit: '' },
-          { label: 'Query Fail Rate', value: stability >= 80 ? '0.2%' : stability >= 65 ? '1.1%' : '3.1%', unit: '' },
-          { label: 'Zone Transfer',   value: stability >= 75 ? 'OK' : 'Error', unit: '' },
-          { label: 'SOA Serials',     value: stability >= 70 ? 'Consistent' : 'Mismatch', unit: '' },
-        ],
-      },
-      responseTime: {
-        findings: [
-          `Median query time from Singapore: ${Math.round(20 + (100 - responseTime) * 0.5)}ms`,
-          responseTime < 70
-            ? `Manila p95 latency: ${Math.round(200 + (100 - responseTime) * 2)}ms — exceeds 150ms threshold`
-            : `Manila p95 latency: ${Math.round(80 + (100 - responseTime))}ms — within threshold`,
-          responseTime < 65
-            ? `Jakarta p95 latency: ${Math.round(280 + (100 - responseTime) * 1.5)}ms — poor, no local PoP`
-            : `Jakarta p95 latency: ${Math.round(100 + (100 - responseTime))}ms — acceptable`,
-        ],
-        recommendation:
-          responseTime < 70
-            ? 'Add a PoP in Manila and Jakarta. F5 XC Anycast DNS reduces p95 to <80ms in measured ASEAN deployments.'
-            : 'Response times are healthy from primary PoPs. Consider adding Ho Chi Minh City for complete ASEAN coverage.',
-        metrics: [
-          { label: 'SG Median',  value: `${Math.round(20 + (100 - responseTime) * 0.5)}ms`, unit: '' },
-          { label: 'KL Median',  value: `${Math.round(60 + (100 - responseTime) * 0.8)}ms`, unit: '' },
-          { label: 'MNL p95',    value: responseTime >= 70 ? `${Math.round(80 + (100 - responseTime))}ms` : `${Math.round(200 + (100 - responseTime) * 2)}ms`, unit: '' },
-          { label: 'JKT p95',    value: responseTime >= 65 ? `${Math.round(100 + (100 - responseTime))}ms` : `${Math.round(280 + (100 - responseTime) * 1.5)}ms`, unit: '' },
-        ],
-      },
-    };
+  const dimScores = { resilience: resScore, stability: stabScore, responseTime: rtScore };
 
-    return { domain, scores, details, overall: Math.round((resilience + stability + responseTime) / 3) };
-  });
+  const dimDetails = {
+    resilience: {
+      findings: [
+        hasGeoNS
+          ? `${nsCount} authoritative NS servers detected — geographic redundancy confirmed`
+          : `${nsCount} NS server(s) — no geographic redundancy detected across ASEAN`,
+        hasDnssec
+          ? 'DNSSEC enabled — zone signed, chain of trust verified'
+          : 'DNSSEC not configured — DNS spoofing and cache poisoning risk',
+        hasCaa
+          ? 'CAA record present — certificate issuance restricted to approved CAs'
+          : 'No CAA record — any CA can issue certificates for this domain',
+      ],
+      recommendation: !hasDnssec
+        ? 'Enable DNSSEC to prevent cache poisoning. Add CAA records to restrict certificate issuance. F5 XC Anycast DNS automates DNSSEC and provides NS geo-redundancy across ASEAN PoPs.'
+        : 'Consider adding a secondary NS cluster in Southeast Asia for additional resilience. F5 XC DNS provides built-in Anycast redundancy.',
+      metrics: [
+        { label: 'NS Count',     value: String(nsCount) },
+        { label: 'Geo Redundant', value: hasGeoNS ? 'Yes' : 'No' },
+        { label: 'DNSSEC',       value: hasDnssec ? 'Enabled' : 'Disabled' },
+        { label: 'CAA Record',   value: hasCaa ? 'Present' : 'Missing' },
+      ],
+    },
+    stability: {
+      findings: [
+        goodTtl
+          ? `TTL: ${ttl}s — low TTL enables fast failover and geo-steering (modern standard ≤300s)`
+          : `TTL: ${ttl}s — high TTL slows failover response; recommended ≤300s for ASEAN agility`,
+        dualStack
+          ? `Dual-stack confirmed — ${A.length} IPv4 and ${AAAA.length} IPv6 addresses active`
+          : `IPv6 (AAAA) records absent — IPv6-only clients may fail; dual-stack recommended`,
+        goodSoa
+          ? `SOA refresh: ${soaRefresh}s — zone synchronisation within acceptable range`
+          : `SOA refresh: ${soaRefresh}s — slow zone propagation may cause stale responses`,
+      ],
+      recommendation: !goodTtl
+        ? `Reduce TTL to ≤300s to enable rapid failover. Add AAAA records for IPv6 clients. F5 XC DNS provides intelligent TTL management and dual-stack support by default.`
+        : 'TTL configuration is healthy. Enable IPv6 if not already active. Monitor SOA refresh consistency.',
+      metrics: [
+        { label: 'TTL',          value: `${ttl}s` },
+        { label: 'TTL Rating',   value: ttlScore === 'high' ? 'Good' : ttlScore === 'medium' ? 'Fair' : 'Poor' },
+        { label: 'IPv4 Records', value: String(A.length) },
+        { label: 'IPv6 Records', value: String(AAAA.length) },
+      ],
+    },
+    responseTime: {
+      findings: [
+        `${A.length} A record(s) returned — ${A.length >= 4 ? 'good load distribution across IPs' : 'limited IP diversity for load balancing'}`,
+        hasGeoNS
+          ? `NS servers distributed geographically — reduced resolver latency across ASEAN`
+          : `NS servers not geo-distributed — resolver latency may be elevated in SEA markets`,
+        nsCount >= 4
+          ? `${nsCount} NS servers provide redundant resolution paths — no single point of failure`
+          : `Only ${nsCount} NS server(s) — limited resolution path diversity`,
+      ],
+      recommendation: !hasGeoNS
+        ? 'Add geographically distributed NS servers. F5 XC Anycast DNS delivers <80ms p95 resolution latency across Singapore, KL, Jakarta, and Manila PoPs.'
+        : 'Resolution topology is healthy. Consider F5 XC DNS for sub-80ms p95 latency guarantees across all ASEAN markets.',
+      metrics: [
+        { label: 'A Records',    value: String(A.length) },
+        { label: 'AAAA Records', value: String(AAAA.length) },
+        { label: 'NS Servers',   value: String(nsCount) },
+        { label: 'Geo NS',       value: hasGeoNS ? 'Yes' : 'No' },
+      ],
+    },
+  };
+
+  const overall = Math.round((resScore + stabScore + rtScore) / 3);
+
+  return {
+    domain,
+    scores: dimScores,
+    details: dimDetails,
+    overall,
+    rawScore: score,
+    issues,
+  };
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -111,7 +127,8 @@ function deriveDnsData(scanGroup) {
 function ScoreBadge({ score, size = 'md' }) {
   const color = scoreColor(score);
   return (
-    <span className={styles[`badge${size.toUpperCase()}`]} style={{ color, borderColor: color + '33', background: color + '14' }}>
+    <span className={styles[`badge${size.toUpperCase()}`]}
+      style={{ color, borderColor: color + '33', background: color + '14' }}>
       {score ?? '—'}
     </span>
   );
@@ -136,9 +153,9 @@ function MetricChip({ label, value }) {
 }
 
 function DimensionPanel({ dim, data, isActive, onClick }) {
-  const score = data.scores[dim];
+  const score  = data.scores[dim];
   const detail = data.details[dim];
-  const color = scoreColor(score);
+  const color  = scoreColor(score);
 
   return (
     <div
@@ -151,15 +168,13 @@ function DimensionPanel({ dim, data, isActive, onClick }) {
         <ScoreBadge score={score} size="sm" />
       </div>
       <ScoreBar score={score} />
-
       {isActive && (
         <div className={styles.dimBody}>
           <div className={styles.dimMetrics}>
             {detail.metrics.map(m => (
-              <MetricChip key={m.label} label={m.label} value={`${m.value}${m.unit}`} />
+              <MetricChip key={m.label} label={m.label} value={m.value} />
             ))}
           </div>
-
           <div className={styles.findingsList}>
             {detail.findings.map((f, i) => (
               <div key={i} className={styles.findingRow}>
@@ -168,7 +183,6 @@ function DimensionPanel({ dim, data, isActive, onClick }) {
               </div>
             ))}
           </div>
-
           <div className={styles.recommendation}>
             <span className={styles.recLabel}>Recommendation</span>
             <p className={styles.recText}>{detail.recommendation}</p>
@@ -179,81 +193,35 @@ function DimensionPanel({ dim, data, isActive, onClick }) {
   );
 }
 
-function DomainCard({ data, isSelected, onClick }) {
-  const color = scoreColor(data.overall);
-  return (
-    <button
-      className={[styles.domainCard, isSelected ? styles.domainCardActive : ''].join(' ')}
-      onClick={onClick}
-      style={{ '--card-accent': color }}
-    >
-      <div className={styles.domainCardTop}>
-        <span className={styles.domainName}>{data.domain}</span>
-        <span className={styles.domainScore} style={{ color }}>{data.overall}</span>
-      </div>
-      <div className={styles.domainDims}>
-        {DIMENSION_KEYS.map(dim => (
-          <div key={dim} className={styles.domainDimRow}>
-            <span className={styles.domainDimLabel}>{DIMENSION_LABELS[dim]}</span>
-            <ScoreBar score={data.scores[dim]} />
-            <span className={styles.domainDimScore} style={{ color: scoreColor(data.scores[dim]) }}>
-              {data.scores[dim]}
-            </span>
-          </div>
-        ))}
-      </div>
-    </button>
-  );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-export default function DnsPage() {
-  // Derive only scan groups with DNS Completed status
-  const completedGroups = useMemo(() =>
-    SCAN_GROUPS.filter(sg => sg.pillars.dns.status === 'Completed'),
-    []
-  );
+export default function DnsPage({ idToken }) {
+  const [domainInput,  setDomainInput]  = useState('');
+  const [isRunning,    setIsRunning]    = useState(false);
+  const [error,        setError]        = useState(null);
+  const [result,       setResult]       = useState(null);   // buildDnsDisplayData output
+  const [rawResult,    setRawResult]    = useState(null);   // full API response
+  const [activeDim,    setActiveDim]    = useState(null);
 
-  const [selectedGroupId, setSelectedGroupId] = useState(completedGroups[0]?.id ?? null);
-  const [selectedDomainIdx, setSelectedDomainIdx] = useState(0);
-  const [activeDim, setActiveDim] = useState(null);
-
-  const selectedGroup = SCAN_GROUPS.find(sg => sg.id === selectedGroupId);
-  const account = ACCOUNTS.find(a => a.id === selectedGroup?.accountId);
-  const dnsData = useMemo(() => deriveDnsData(selectedGroup), [selectedGroup]);
-  const domainData = dnsData?.[selectedDomainIdx] ?? null;
-
-  const overallScore = selectedGroup?.pillars.dns.score;
-
-  // Reset domain/dim when group changes
-  const handleGroupChange = (id) => {
-    setSelectedGroupId(id);
-    setSelectedDomainIdx(0);
+  const handleRun = async () => {
+    const domain = domainInput.trim().replace(/^https?:\/\//, '');
+    if (!domain) return;
+    setIsRunning(true);
+    setError(null);
+    setResult(null);
     setActiveDim(null);
+    try {
+      const data = await runDnsDiscovery(domain, idToken);
+      setRawResult(data);
+      setResult(buildDnsDisplayData(data.domain, data.findings));
+    } catch (err) {
+      setError(err.message || 'Discovery failed. Please try again.');
+    } finally {
+      setIsRunning(false);
+    }
   };
-  const handleDomainSelect = (idx) => {
-    setSelectedDomainIdx(idx);
-    setActiveDim(null);
-  };
-  const handleDimClick = (dim) => setActiveDim(prev => prev === dim ? null : dim);
 
-  if (completedGroups.length === 0) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>
-            <svg width="40" height="40" viewBox="0 0 15 15" fill="none" stroke="var(--f5-N400)" strokeWidth="1">
-              <circle cx="7.5" cy="7.5" r="6"/><ellipse cx="7.5" cy="7.5" rx="2.6" ry="6"/>
-              <line x1="1.5" y1="7.5" x2="13.5" y2="7.5"/>
-            </svg>
-          </div>
-          <p className={styles.emptyTitle}>No completed DNS probes</p>
-          <p className={styles.emptySub}>Run a new probe from the Dashboard to see DNS results here.</p>
-        </div>
-      </div>
-    );
-  }
+  const handleKeyDown = e => { if (e.key === 'Enter') handleRun(); };
 
   return (
     <div className={styles.page}>
@@ -270,141 +238,186 @@ export default function DnsPage() {
             DNS
           </div>
           <h1 className={styles.pageTitle}>DNS Resilience Report</h1>
-          <p className={styles.pageSubtitle}>
-            Resilience · Stability · Response Time across ASEAN PoPs
-          </p>
+          <p className={styles.pageSubtitle}>Resilience · Stability · Response Time across ASEAN PoPs</p>
         </div>
 
-        {/* Scan Group Selector */}
+        {/* ── Domain input + Run button ── */}
         <div className={styles.scanGroupSelector}>
-          <label className={styles.selectorLabel}>Probe Group</label>
-          <div className={styles.selectWrap}>
-            <select
-              className={styles.select}
-              value={selectedGroupId ?? ''}
-              onChange={e => handleGroupChange(e.target.value)}
+          <label className={styles.selectorLabel}>Target Domain</label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div className={styles.selectWrap} style={{ flex: 1 }}>
+              <input
+                className={styles.select}
+                style={{ paddingRight: 12 }}
+                type="text"
+                placeholder="e.g. google.com"
+                value={domainInput}
+                onChange={e => setDomainInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isRunning}
+              />
+            </div>
+            <button
+              onClick={handleRun}
+              disabled={isRunning || !domainInput.trim()}
+              style={{
+                padding: '0 16px', height: 36, borderRadius: 6, border: 'none',
+                background: 'var(--f5-red)', color: '#fff', fontWeight: 600,
+                cursor: isRunning || !domainInput.trim() ? 'not-allowed' : 'pointer',
+                opacity: isRunning || !domainInput.trim() ? 0.6 : 1,
+                whiteSpace: 'nowrap', fontSize: 13,
+              }}
             >
-              {completedGroups.map(sg => {
-                const acct = ACCOUNTS.find(a => a.id === sg.accountId);
-                return (
-                  <option key={sg.id} value={sg.id}>
-                    {sg.name} — {acct?.name}
-                  </option>
-                );
-              })}
-            </select>
-            <span className={styles.selectChevron}>
-              <svg width="12" height="12" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 5l4.5 4.5L12 5"/>
-              </svg>
-            </span>
+              {isRunning ? 'Running…' : 'Run Discovery'}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ── Context bar ── */}
-      {selectedGroup && (
-        <div className={styles.contextBar}>
-          <div className={styles.contextItem}>
-            <span className={styles.contextDot} />
-            <span className={styles.contextKey}>Account</span>
-            <span className={styles.contextVal}>{account?.name}</span>
-          </div>
-          <div className={styles.contextSep} />
-          <div className={styles.contextItem}>
-            <span className={styles.contextKey}>Domains probed</span>
-            <span className={styles.contextVal}>{selectedGroup.domains.length}</span>
-          </div>
-          <div className={styles.contextSep} />
-          <div className={styles.contextItem}>
-            <span className={styles.contextKey}>Probe date</span>
-            <span className={styles.contextVal}>{fmtTimestamp(selectedGroup.createdAt)}</span>
-          </div>
-          <div className={styles.contextSep} />
-          <div className={styles.contextItem}>
-            <span className={styles.contextKey}>Age</span>
-            <span className={styles.contextVal}>{daysAgo(selectedGroup.createdAt)}</span>
-          </div>
-          <div className={styles.contextSep} />
-          <div className={styles.contextItem}>
-            <span className={styles.contextKey}>Overall DNS Score</span>
-            <span className={styles.contextVal} style={{ color: scoreColor(overallScore), fontWeight: 700 }}>
-              {overallScore}
-            </span>
-          </div>
+      {/* ── Error state ── */}
+      {error && (
+        <div style={{
+          margin: '16px 0', padding: '12px 16px', borderRadius: 8,
+          background: '#fff0f0', border: '1px solid #fca5a5', color: '#b91c1c', fontSize: 13,
+        }}>
+          {error}
         </div>
       )}
 
-      {/* ── Body: Domain list + Detail ── */}
-      <div className={styles.body}>
-        {/* Left: Domain cards */}
-        <div className={styles.domainList}>
-          <p className={styles.panelHeading}>Domains</p>
-          {dnsData?.map((d, idx) => (
-            <DomainCard
-              key={d.domain}
-              data={d}
-              isSelected={idx === selectedDomainIdx}
-              onClick={() => handleDomainSelect(idx)}
-            />
-          ))}
+      {/* ── Empty / prompt state ── */}
+      {!result && !isRunning && !error && (
+        <div className={styles.empty}>
+          <div className={styles.emptyIcon}>
+            <svg width="40" height="40" viewBox="0 0 15 15" fill="none" stroke="var(--f5-N400)" strokeWidth="1">
+              <circle cx="7.5" cy="7.5" r="6"/><ellipse cx="7.5" cy="7.5" rx="2.6" ry="6"/>
+              <line x1="1.5" y1="7.5" x2="13.5" y2="7.5"/>
+            </svg>
+          </div>
+          <p className={styles.emptyTitle}>Enter a domain to run a DNS discovery</p>
+          <p className={styles.emptySub}>Type a domain name above and click Run Discovery to see live DNS resilience findings.</p>
         </div>
+      )}
 
-        {/* Right: Dimension detail */}
-        {domainData && (
-          <div className={styles.detail}>
-            <div className={styles.detailHeader}>
-              <div>
-                <p className={styles.detailDomain}>{domainData.domain}</p>
-                <p className={styles.detailHint}>Click a dimension to expand findings</p>
-              </div>
-              <div className={styles.overallBadgeWrap}>
-                <span className={styles.overallLabel}>Overall</span>
-                <span
-                  className={styles.overallScore}
-                  style={{ color: scoreColor(domainData.overall) }}
-                >
-                  {domainData.overall}
-                </span>
-              </div>
+      {/* ── Loading state ── */}
+      {isRunning && (
+        <div className={styles.empty}>
+          <div className={styles.emptyIcon}>
+            <svg width="40" height="40" viewBox="0 0 15 15" fill="none" stroke="var(--f5-red)" strokeWidth="1.2"
+              style={{ animation: 'spin 1s linear infinite' }}>
+              <circle cx="7.5" cy="7.5" r="6" strokeDasharray="20 18"/>
+            </svg>
+          </div>
+          <p className={styles.emptyTitle}>Running DNS discovery…</p>
+          <p className={styles.emptySub}>Probing {domainInput} from ASEAN vantage points</p>
+        </div>
+      )}
+
+      {/* ── Results ── */}
+      {result && rawResult && (
+        <>
+          {/* Context bar */}
+          <div className={styles.contextBar}>
+            <div className={styles.contextItem}>
+              <span className={styles.contextDot} />
+              <span className={styles.contextKey}>Domain</span>
+              <span className={styles.contextVal}>{result.domain}</span>
             </div>
-
-            <div className={styles.dimensions}>
-              {DIMENSION_KEYS.map(dim => (
-                <DimensionPanel
-                  key={dim}
-                  dim={dim}
-                  data={domainData}
-                  isActive={activeDim === dim}
-                  onClick={() => handleDimClick(dim)}
-                />
-              ))}
+            <div className={styles.contextSep} />
+            <div className={styles.contextItem}>
+              <span className={styles.contextKey}>Probe time</span>
+              <span className={styles.contextVal}>{fmtTimestamp(rawResult.completedAt)}</span>
             </div>
-
-            {/* F5 XC promo strip */}
-            <div className={styles.promoStrip}>
-              <div className={styles.promoIcon}>
-                <svg width="18" height="18" viewBox="0 0 15 15" fill="none" stroke="var(--f5-blue)" strokeWidth="1.4">
-                  <circle cx="7.5" cy="7.5" r="6"/>
-                  <path d="M7.5 4v3.5l2.5 1.5"/>
-                </svg>
-              </div>
-              <div className={styles.promoText}>
-                <strong>F5 Distributed Cloud (XC) Anycast DNS</strong> can improve resilience,
-                reduce p95 latency to &lt;80ms across ASEAN, and provide built-in DNSSEC automation.
-              </div>
-              <a
-                href="https://www.f5.com/cloud/products/dns"
-                target="_blank"
-                rel="noreferrer"
-                className={styles.promoLink}
-              >
-                Learn more →
-              </a>
+            <div className={styles.contextSep} />
+            <div className={styles.contextItem}>
+              <span className={styles.contextKey}>API Score</span>
+              <span className={styles.contextVal} style={{ color: scoreColor(result.rawScore), fontWeight: 700 }}>
+                {result.rawScore}
+              </span>
+            </div>
+            <div className={styles.contextSep} />
+            <div className={styles.contextItem}>
+              <span className={styles.contextKey}>Issues found</span>
+              <span className={styles.contextVal}>{result.issues.length}</span>
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Issues strip */}
+          {result.issues.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0 16px' }}>
+              {result.issues.map(issue => (
+                <div key={issue.id} style={{
+                  padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 500,
+                  background: issue.severity === 'critical' ? '#fff0f0'
+                            : issue.severity === 'high'     ? '#fff7ed'
+                            : issue.severity === 'medium'   ? '#fffbeb'
+                            : '#f0fdf4',
+                  color:      issue.severity === 'critical' ? '#b91c1c'
+                            : issue.severity === 'high'     ? '#c2410c'
+                            : issue.severity === 'medium'   ? '#92400e'
+                            : '#166534',
+                  border:     `1px solid ${
+                              issue.severity === 'critical' ? '#fca5a5'
+                            : issue.severity === 'high'     ? '#fed7aa'
+                            : issue.severity === 'medium'   ? '#fde68a'
+                            : '#bbf7d0'}`,
+                }}>
+                  {issue.severity.toUpperCase()} · {issue.title}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Detail panel */}
+          <div className={styles.body}>
+            <div className={styles.detail} style={{ flex: 1 }}>
+              <div className={styles.detailHeader}>
+                <div>
+                  <p className={styles.detailDomain}>{result.domain}</p>
+                  <p className={styles.detailHint}>Click a dimension to expand findings</p>
+                </div>
+                <div className={styles.overallBadgeWrap}>
+                  <span className={styles.overallLabel}>Overall</span>
+                  <span className={styles.overallScore} style={{ color: scoreColor(result.overall) }}>
+                    {result.overall}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.dimensions}>
+                {DIMENSION_KEYS.map(dim => (
+                  <DimensionPanel
+                    key={dim}
+                    dim={dim}
+                    data={result}
+                    isActive={activeDim === dim}
+                    onClick={() => setActiveDim(prev => prev === dim ? null : dim)}
+                  />
+                ))}
+              </div>
+
+              {/* F5 XC promo strip */}
+              <div className={styles.promoStrip}>
+                <div className={styles.promoIcon}>
+                  <svg width="18" height="18" viewBox="0 0 15 15" fill="none" stroke="var(--f5-blue)" strokeWidth="1.4">
+                    <circle cx="7.5" cy="7.5" r="6"/>
+                    <path d="M7.5 4v3.5l2.5 1.5"/>
+                  </svg>
+                </div>
+                <div className={styles.promoText}>
+                  <strong>F5 Distributed Cloud (XC) Anycast DNS</strong> can improve resilience,
+                  reduce p95 latency to &lt;80ms across ASEAN, and provide built-in DNSSEC automation.
+                </div>
+                <a href="https://www.f5.com/cloud/products/dns"
+                  target="_blank" rel="noreferrer" className={styles.promoLink}>
+                  Learn more →
+                </a>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

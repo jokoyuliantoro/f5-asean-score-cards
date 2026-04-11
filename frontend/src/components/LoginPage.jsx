@@ -3,13 +3,15 @@ import F5Logo from './F5Logo';
 import OtpInput from './OtpInput';
 import ResendTimer from './ResendTimer';
 import PrivacyFooter from './PrivacyFooter';
-import { DEMO_OTP, getRoleForEmail, INITIAL_USERS } from '../data/users';
+import { getRoleForEmail, INITIAL_USERS } from '../data/users';
+import { initiateAuth, respondToChallenge } from '../api/auth';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage({ onAuthenticated, users = INITIAL_USERS }) {
   const [step,       setStep]       = useState('email'); // 'email' | 'otp'
   const [email,      setEmail]      = useState('');
   const [otp,        setOtp]        = useState('');
+  const [session,    setSession]    = useState(null);   // Cognito session token
   const [isLoading,  setIsLoading]  = useState(false);
   const [emailError, setEmailError] = useState('');
   const [otpError,   setOtpError]   = useState('');
@@ -20,8 +22,8 @@ export default function LoginPage({ onAuthenticated, users = INITIAL_USERS }) {
 
   const validateEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-  // Step 1 — validate email is @f5.com
-  const handleEmailSubmit = e => {
+  // Step 1 — validate email, call Cognito InitiateAuth, trigger OTP email
+  const handleEmailSubmit = async e => {
     e.preventDefault();
     if (!validateEmail(email)) {
       setEmailError('Please enter a valid email address.');
@@ -33,22 +35,42 @@ export default function LoginPage({ onAuthenticated, users = INITIAL_USERS }) {
     }
     setEmailError('');
     setIsLoading(true);
-    setTimeout(() => { setIsLoading(false); setStep('otp'); }, 800);
+    try {
+      const sess = await initiateAuth(email);
+      setSession(sess);
+      setStep('otp');
+    } catch (err) {
+      setEmailError(err.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Step 2 — verify OTP (demo: must be DEMO_OTP = "123456")
-  const handleOtpComplete = completeOtp => {
+  // Step 2 — submit OTP to Cognito RespondToAuthChallenge, get IdToken
+  const handleOtpComplete = async completeOtp => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      if (completeOtp !== DEMO_OTP) {
-        setOtpError(`Invalid code. For this demo the OTP is ${DEMO_OTP}.`);
-        setOtp('');
-        return;
-      }
+    try {
+      const tokens = await respondToChallenge(email, session, completeOtp);
       const role = getRoleForEmail(email, users);
-      onAuthenticated(email, role ?? 'readonly');
-    }, 800);
+      onAuthenticated(email, role ?? 'readonly', tokens.IdToken);
+    } catch (err) {
+      setOtpError(err.message || 'Invalid code. Please try again.');
+      setOtp('');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Resend: re-trigger InitiateAuth to get a fresh session + new OTP email
+  const handleResend = async () => {
+    setOtp('');
+    setOtpError('');
+    try {
+      const sess = await initiateAuth(email);
+      setSession(sess);
+    } catch (err) {
+      setOtpError('Failed to resend code. Please go back and try again.');
+    }
   };
 
   const subTitles = {
@@ -114,10 +136,10 @@ export default function LoginPage({ onAuthenticated, users = INITIAL_USERS }) {
                     <span className={styles.spinnerDark} />Verifying…
                   </div>
                 )}
-                {!isLoading && <ResendTimer onResend={() => { setOtp(''); setOtpError(''); }} />}
+                {!isLoading && <ResendTimer onResend={handleResend} />}
                 <div className={styles.formGroup} style={{ marginTop: 16 }}>
                   <button type="button" className={styles.btnBack}
-                    onClick={() => { setStep('email'); setOtp(''); setOtpError(''); }}>
+                    onClick={() => { setStep('email'); setOtp(''); setOtpError(''); setSession(null); }}>
                     ← Back to email
                   </button>
                 </div>

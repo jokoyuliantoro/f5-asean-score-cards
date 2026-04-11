@@ -29,16 +29,18 @@ function getTitle(navItem) {
 export default function App() {
   const [email,   setEmail]   = useState(null);
   const [role,    setRole]    = useState(null);   // 'admin' | 'user' | 'readonly'
+  const [idToken, setIdToken] = useState(null);   // Cognito IdToken for API calls
   const [navItem, setNavItem] = useState('dashboard');
 
   // Live user registry — admins can edit roles in UsersPage
   const [users, setUsers] = useState(INITIAL_USERS);
 
-  const handleAuthenticated = (email, incomingRole) => {
-    // Re-derive role from live registry (in case it was changed during this session)
+  // Called by LoginPage after successful OTP verification
+  const handleAuthenticated = (email, incomingRole, token) => {
     const liveRole = getRoleForEmail(email, users) ?? incomingRole ?? 'readonly';
     setEmail(email);
     setRole(liveRole);
+    setIdToken(token);
     setNavItem(liveRole === 'readonly' ? 'sample-reports' : 'dashboard');
   };
 
@@ -47,11 +49,16 @@ export default function App() {
   }
 
   const handleNav = (id) => {
-    // Read-only: only sample-reports accessible
     if (role === 'readonly' && id !== 'sample-reports') return;
-    // Users page: admin only
     if (id === 'users' && role !== 'admin') return;
     setNavItem(id);
+  };
+
+  const handleLogout = () => {
+    setEmail(null);
+    setRole(null);
+    setIdToken(null);
+    setNavItem('dashboard');
   };
 
   const renderPage = () => {
@@ -60,9 +67,9 @@ export default function App() {
       case 'sample-reports':  return <SampleReportsPage />;
       case 'accounts':        return <AccountsPage />;
       case 'scan-history':    return <ScanHistoryPage />;
-      case 'dns':             return <DnsPage />;
+      case 'dns':             return <DnsPage idToken={idToken} />;
       case 'dns-lifecycle':   return <LifecyclePage pillar="dns" />;
-      case 'https':           return <HttpsPage />;
+      case 'https':           return <HttpsPage idToken={idToken} />;
       case 'https-lifecycle': return <LifecyclePage pillar="https" />;
       case 'surface-scan':    return <SurfaceScanPage />;
       case 'surface-lifecycle': return <LifecyclePage pillar="surfaceScan" />;
@@ -91,7 +98,7 @@ export default function App() {
         <Topbar
           email={email}
           role={role}
-          onLogout={() => { setEmail(null); setRole(null); }}
+          onLogout={handleLogout}
           title={getTitle(navItem)}
         />
         <div className={styles.body}>

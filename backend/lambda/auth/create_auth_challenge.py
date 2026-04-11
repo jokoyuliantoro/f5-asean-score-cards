@@ -1,4 +1,5 @@
 import os
+import json
 import random
 import boto3
 
@@ -9,19 +10,19 @@ DEMO_OTP_ENABLED  = os.environ.get('DEMO_OTP_ENABLED', 'false').lower() == 'true
 SES_FROM_EMAIL    = os.environ.get('SES_FROM_EMAIL', '')
 
 def lambda_handler(event, context):
-    email = event['request']['userAttributes']['email']
+    print("EVENT:", json.dumps(event))
+    # userName is a UUID; real email is in userAttributes
+    email = (event['request']['userAttributes'].get('email') or event['userName'])
+    print("EMAIL:", email)
 
-    # Use fixed OTP in non-prod / demo mode
     if DEMO_OTP_ENABLED:
         otp = DEMO_OTP
     else:
         otp = str(random.randint(100000, 999999))
 
-    # Send OTP via SES
     if not DEMO_OTP_ENABLED:
         _send_otp_email(email, otp)
 
-    # Store answer in private challenge data (never sent to client)
     event['response']['publicChallengeParameters']  = {'email': email}
     event['response']['privateChallengeParameters'] = {'answer': otp}
     event['response']['challengeMetadata']          = 'OTP_CHALLENGE'
