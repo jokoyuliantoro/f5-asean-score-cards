@@ -8,6 +8,8 @@ https://github.com/jokoyuliantoro/f5-asean-score-cards
 - Phase 3 complete: all AWS infra deployed via Terraform
 - Phase 4 complete: Lambda functions working (tested against google.com)
 - Phase 5 pending: CloudFront blocked (AWS Support case open), SPA not yet live
+- Cognito: admin user (joko.yuliantoro@gmail.com) created and CONFIRMED
+- SES: joko.yuliantoro@gmail.com verified (Success)
 
 ## AWS Account
 - Account ID: 120864355486
