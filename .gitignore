@@ -22,3 +22,48 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Terraform
+backend/terraform/.terraform/
+backend/terraform/.build/
+backend/terraform/terraform.tfstate*
+backend/terraform/terraform.tfvars
+backend/terraform/.tfplan
+
+# Frontend build
+frontend/dist/
+frontend/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# Terraform
+backend/terraform/.terraform/
+backend/terraform/.build/
+backend/terraform/terraform.tfstate*
+backend/terraform/terraform.tfvars
+backend/terraform/.tfplan
+
+# Frontend build
+frontend/dist/
+frontend/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# Terraform
+backend/terraform/.terraform/
+backend/terraform/.build/
+backend/terraform/terraform.tfstate*
+backend/terraform/terraform.tfvars
+backend/terraform/.tfplan
+
+# Frontend build
+frontend/dist/
+frontend/node_modules/
+
+# Python
+__pycache__/
+*.pyc
