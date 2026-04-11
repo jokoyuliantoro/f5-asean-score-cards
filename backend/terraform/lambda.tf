@@ -94,8 +94,11 @@ resource "aws_lambda_function" "dns_discovery" {
 
   environment {
     variables = {
-      TABLE_NAME  = aws_dynamodb_table.main.name
-      ENVIRONMENT = var.environment
+      TABLE_NAME              = aws_dynamodb_table.main.name
+      ENVIRONMENT             = var.environment
+      APP_NAME                = var.app_name
+      LATENCY_PROBE_ARN_SEA   = aws_lambda_function.latency_probe_sea.arn
+      LATENCY_PROBE_ARN_USE1  = "arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:${var.app_name}-latency-probe-${var.environment}"      
     }
   }
 
