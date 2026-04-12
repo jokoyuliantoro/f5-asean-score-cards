@@ -11,6 +11,7 @@ import concurrent.futures
 import dns.resolver
 import dns.rdatatype
 import dns.exception
+import analysis_dns  # sibling module in the same Lambda package
 
 # NOTE: lambda_timeout in terraform.tfvars should be >= 30s for this handler.
 # Per-NS queries and TCP latency probes run in parallel via ThreadPoolExecutor
@@ -241,6 +242,25 @@ def _ripe_lookup(ip):
     except Exception:
         return {'asn': None, 'asnNumber': None, 'holder': 'Unknown', 'announced': False}
 
+def _run_ai_analysis(findings: dict, issues: list, scores: dict, domain: str) -> dict:
+    """
+    Call the AI analysis module. Wrapped so any failure is isolated.
+    Returns the aiAnalysis dict (status=success or status=error).
+    """
+    try:
+        return analysis_dns.generate(findings, issues, scores, domain)
+    except Exception as exc:
+        return {
+            "status": "error",
+            "error":  str(exc)[:200],
+            "sections": {
+                "executive":        "",
+                "riskAssessment":   "",
+                "f5Recommendation": "",
+                "nextSteps":        "",
+            },
+        }
+
 # ── Lambda entry point ────────────────────────────────────────────────────────
 
 def _floats_to_decimal(obj):
@@ -396,7 +416,13 @@ def lambda_handler(event, context):
     app_domain = _maybe_promote_to_www(app_domain)
 
     findings = _run_dns_discovery(app_domain)
-    _save_result(job_id, account_id, app_domain, findings)
+    ai_analysis = _run_ai_analysis(
+        findings,
+        findings.get('issues', []),
+        {'overall': findings.get('score', 0)},
+        app_domain,
+    )
+    _save_result(job_id, account_id, app_domain, findings, ai_analysis)
 
     return _resp(200, {
         'jobId':       job_id,
@@ -404,6 +430,7 @@ def lambda_handler(event, context):
         'pillar':      'dns',
         'status':      'complete',
         'findings':    findings,
+        'aiAnalysis':  ai_analysis,
         'completedAt': datetime.datetime.utcnow().isoformat() + 'Z',
     })
 
@@ -1361,10 +1388,10 @@ def _derive_issues(app_domain, apex_domain, f):
 
 # ── Persistence ───────────────────────────────────────────────────────────────
 
-def _save_result(job_id, account_id, domain, findings):
+def _save_result(job_id, account_id, domain, findings, ai_analysis=None):
     table = dynamodb.Table(os.environ['TABLE_NAME'])
     now   = datetime.datetime.utcnow().isoformat() + 'Z'
-    table.put_item(Item=_floats_to_decimal({
+    item  = {
         'pk':          f'JOB#{job_id}',
         'sk':          'PILLAR#dns',
         'gsi1pk':      'JOB',
@@ -1377,7 +1404,10 @@ def _save_result(job_id, account_id, domain, findings):
         'findings':    findings,
         'createdAt':   now,
         'completedAt': now,
-    }))
+    }
+    if ai_analysis:
+        item['aiAnalysis'] = ai_analysis
+    table.put_item(Item=_floats_to_decimal(item))
 
 def _get_job(job_id):
     table = dynamodb.Table(os.environ['TABLE_NAME'])

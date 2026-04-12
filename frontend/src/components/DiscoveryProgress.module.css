@@ -1,0 +1,121 @@
+/* DiscoveryProgress.module.css */
+
+.floater {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  width: 320px;
+  background: #fff;
+  border: 0.5px solid #d4d8e2;
+  border-radius: 12px;
+  padding: 1rem 1.125rem 0.875rem;
+  box-shadow: 0 4px 20px rgba(15,30,87,0.10), 0 1px 4px rgba(15,30,87,0.06);
+  pointer-events: none;            /* never blocks clicks behind it */
+}
+
+/* ---- header ---- */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f1e57;
+  flex: 1;
+}
+
+.domain {
+  font-size: 11px;
+  color: #7a85a3;
+  font-family: var(--font-mono, monospace);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- spinner ---- */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #d0d5e8;
+  border-top-color: #e4002b;          /* F5 red */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- progress bar ---- */
+.barTrack {
+  height: 4px;
+  background: #eef0f5;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0f1e57 0%, #e4002b 100%);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---- phase label ---- */
+.phaseRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.625rem;
+}
+
+.phaseLabel {
+  font-size: 12px;
+  color: #5a6380;
+}
+
+.pct {
+  font-size: 12px;
+  font-weight: 500;
+  color: #0f1e57;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- step dots ---- */
+.dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e0e3ec;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.dotDone {
+  background: #b8c0d8;
+}
+
+.dotActive {
+  background: #e4002b;
+  transform: scale(1.35);
+}
+
+/* ---- hide in print ---- */
+@media print {
+  .floater { display: none !important; }
+}

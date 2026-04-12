@@ -427,6 +427,22 @@
   border: 1px solid var(--f5-N200);
 }
 
+/* ── AI Analysis collapsible — matches Findings sectionTitle size ── */
+.collapsible_ai {
+  overflow: visible;    /* allow aiSection border-left to show */
+  border-radius: 0;
+  background: none;
+  border: none;
+}
+.collapsible_ai .collapsibleTrigger {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--f5-N600);
+  padding: 0 0 10px 0;
+  background: none;
+  border: none;
+}
+
 .collapsibleTrigger {
   display: flex;
   align-items: center;
@@ -453,6 +469,31 @@
   flex-shrink: 0;
   color: var(--f5-N400);
   transition: transform 0.2s ease;
+}
+
+/* labelSuffix slot — between label and chevron */
+.collapsibleSuffix {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* ── AI meta inline in outer collapsible header ── */
+.aiMetaInline {
+  font-size: 11px;
+  font-weight: 400;
+  color: #6b7a9e;
+  background: #eef1fb;
+  border-radius: 8px;
+  padding: 1px 8px;
+}
+.aiMetaTime  { color: #8a93b2; }
+.aiMetaDirty { color: #92400e; font-weight: 500; }
+.aiMetaError {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: #fff0f0;
+  color: #b91c1c;
 }
 
 .collapsibleBody {
@@ -830,4 +871,259 @@
   .breakdownTable   { border: 1px solid #ddd !important; }
   .breakdownRowFail { background: #fff8f8 !important; }
   .breakdownRowPass { background: white !important; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   APPEND to end of existing DnsPage.module.css
+   AI Analysis section + Collapsible 'ai' variant + Save row
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── AI Analysis wrapper ── */
+.aiSection {
+  background: var(--f5-white, #fff);
+  border: 1px solid #c7d0e8;
+  border-left: 3px solid var(--f5-blue, #0f1e57);
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+}
+
+/* ── AI section header ── */
+.aiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0.75rem 1.125rem;
+  background: #f4f6fb;
+  border-bottom: 0.5px solid #dde3f0;
+}
+
+.aiHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aiHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.aiTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--f5-blue, #0f1e57);
+}
+
+.aiModelBadge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #0f1e57;
+  color: #fff;
+}
+
+.aiErrorBadge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #fff0f0;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.aiDirty {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.aiSaveMsg {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--f5-green, #166534);
+}
+
+.aiGenTime {
+  font-size: 11px;
+  color: #6b7a9e;
+}
+
+/* ── Error state ── */
+.aiErrorBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 1rem 1.125rem;
+  background: #fff7ed;
+  color: #92400e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ── Collapsible 'ai' variant — used inside the AI section ── */
+/* This re-uses the existing Collapsible component with a variant prop.
+   Add this style rule to support variant="ai" if your Collapsible
+   checks for it, or just let it fall through to default styling —
+   the aiSection border-left provides the visual differentiation. */
+
+/* ── Editable AI textareas ── */
+.aiTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--f5-N700, #1a2035);
+  background: #fafbff;
+  border: 0.5px solid #b0bbda;
+  border-radius: 6px;
+  padding: 0.75rem 0.875rem;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: block;
+  min-height: 120px;
+}
+
+/* ── Plain text read view (default, no textarea) ── */
+.aiSubSection {
+  padding: 0.75rem 1.125rem;
+  border-bottom: 0.5px solid #eef0f8;
+}
+.aiSubSection:last-of-type { border-bottom: none; }
+
+.aiSubHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.aiSubTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--f5-blue, #0f1e57);
+}
+
+.aiEditBtn {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: 6px;
+  border: 0.5px solid #c7d0e8;
+  background: #f4f6fb;
+  color: #4a5580;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.aiEditBtn:hover { background: #e8ecf8; }
+
+.aiText {
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--f5-N600, #1a2035);
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.aiTextEmpty {
+  color: var(--f5-N400);
+  font-style: italic;
+}
+
+.aiTextarea:focus {
+  outline: none;
+  border-color: var(--f5-blue, #0f1e57);
+  box-shadow: 0 0 0 3px rgba(15, 30, 87, 0.08);
+}
+
+.aiTextarea::placeholder {
+  color: #a0aec0;
+}
+
+/* ── Save row ── */
+.aiSaveRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 1.125rem;
+  border-top: 0.5px solid #dde3f0;
+  background: #f9fafd;
+}
+
+.aiSaveBtn {
+  height: 34px;
+  padding: 0 16px;
+  background: var(--f5-red, #e4002b);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.aiSaveBtn:hover:not(:disabled) {
+  background: #c00024;
+}
+
+.aiSaveBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.aiSaveHint {
+  font-size: 12px;
+  color: #6b7a9e;
+}
+
+/* ── AI section print overrides ── */
+@media print {
+  /* Hide interactive chrome */
+  .aiSaveRow,
+  .aiEditBtn,
+  .aiMetaInline, .aiMetaTime, .aiMetaDirty, .aiMetaError {
+    display: none !important;
+  }
+
+  /* Sub-section titles print as bold headings */
+  .aiSubTitle {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #0f1e57 !important;
+  }
+
+  /* Plain text reads naturally — no extra overrides needed */
+  .aiText {
+    font-size: 12px !important;
+    line-height: 1.65 !important;
+  }
+
+  /* Textarea (edit mode) — hide entirely in print */
+  .aiTextarea {
+    display: none !important;
+  }
+
+  .aiSection {
+    border: 0.5px solid #ccc !important;
+    border-left: 2px solid #0f1e57 !important;
+    overflow: visible !important;
+  }
+
+  .aiSubSection {
+    border-bottom: 0.5px solid #eee !important;
+    break-inside: avoid;
+    padding: 6px 10px !important;
+  }
 }

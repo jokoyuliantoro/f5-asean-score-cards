@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { runDnsDiscovery } from '../api/discovery';
 import { scoreColor, fmtTimestamp } from '../data/appData';
+import DiscoveryProgress from './DiscoveryProgress';
 import styles from './DnsPage.module.css';
 
 // ── Score deduction rules (mirrors backend _compute_score logic) ──────────────
@@ -102,13 +103,33 @@ function digCommands(issueId, appDomain, apexDomain, findings) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function Collapsible({ label, icon, children, defaultOpen = false, variant = 'default' }) {
+function Collapsible({ label, labelSuffix, icon, children, defaultOpen = false, variant = 'default' }) {
   const [open, setOpen] = useState(defaultOpen);
+  const bodyRef = React.useRef(null);
+
+  function toggle() {
+    setOpen(o => {
+      const next = !o;
+      // After opening, trigger resize on any textareas inside (edit mode)
+      if (next) {
+        requestAnimationFrame(() => {
+          if (!bodyRef.current) return;
+          bodyRef.current.querySelectorAll('textarea').forEach(el => {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+          });
+        });
+      }
+      return next;
+    });
+  }
+
   return (
     <div className={`${styles.collapsible} ${styles[`collapsible_${variant}`] ?? ''}`}>
-      <button className={styles.collapsibleTrigger} onClick={() => setOpen(o => !o)}>
+      <button className={styles.collapsibleTrigger} onClick={toggle}>
         {icon && <span className={styles.collapsibleIcon}>{icon}</span>}
         <span className={styles.collapsibleLabel}>{label}</span>
+        {labelSuffix && <span className={styles.collapsibleSuffix}>{labelSuffix}</span>}
         <svg
           className={styles.collapsibleChevron}
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
@@ -117,7 +138,7 @@ function Collapsible({ label, icon, children, defaultOpen = false, variant = 'de
           <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
-      {open && <div className={styles.collapsibleBody}>{children}</div>}
+      {open && <div ref={bodyRef} className={styles.collapsibleBody}>{children}</div>}
     </div>
   );
 }
@@ -426,27 +447,148 @@ function DnsRecordsTable({ findings }) {
   );
 }
 
+
+// ── AI Analysis Section ───────────────────────────────────────────────────────
+
+const AI_SECTIONS = [
+  { key: 'executive',        label: 'Executive Summary',    defaultOpen: true  },
+  { key: 'riskAssessment',   label: 'Risk Assessment',      defaultOpen: true  },
+  { key: 'f5Recommendation', label: 'F5 Recommendation',    defaultOpen: true  },
+  { key: 'nextSteps',        label: 'Suggested Next Steps', defaultOpen: true  },
+];
+
+function AiAnalysisSection({ aiAnalysis, onSectionsChange }) {
+  const [edits, setEdits] = useState(() => ({
+    executive:        aiAnalysis?.sections?.executive        ?? '',
+    riskAssessment:   aiAnalysis?.sections?.riskAssessment   ?? '',
+    f5Recommendation: aiAnalysis?.sections?.f5Recommendation ?? '',
+    nextSteps:        aiAnalysis?.sections?.nextSteps        ?? '',
+  }));
+  const [dirty,    setDirty]    = useState(false);
+  const [saveMsg,  setSaveMsg]  = useState('');
+  const [editing,  setEditing]  = useState(null); // which section key is in edit mode
+
+  function handleChange(key, value) {
+    const next = { ...edits, [key]: value };
+    setEdits(next);
+    setDirty(true);
+    onSectionsChange?.(next);
+  }
+
+  function handleSave() {
+    setSaveMsg('Saving…');
+    setTimeout(() => { setSaveMsg('Saved ✓'); setDirty(false); }, 800);
+  }
+
+  const isError = aiAnalysis?.status === 'error';
+
+  const headerMeta = !isError
+    ? <span className={styles.aiMetaInline}>
+        {aiAnalysis?.model ?? 'GPT-4o'}
+        {aiAnalysis?.generatedAt && (
+          <span className={styles.aiMetaTime}>
+            {' · ' + new Date(aiAnalysis.generatedAt).toLocaleString('en-SG', { dateStyle: 'medium', timeStyle: 'short' })}
+          </span>
+        )}
+        {dirty && <span className={styles.aiMetaDirty}> · Unsaved edits</span>}
+      </span>
+    : <span className={styles.aiMetaError}>Generation failed</span>;
+
+  return (
+    <Collapsible
+      label="AI Analysis"
+      defaultOpen={false}
+      labelSuffix={headerMeta}
+      variant="ai"
+      icon={
+        <svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4">
+          <circle cx="7.5" cy="7.5" r="6"/>
+          <path d="M5 7.5h5M7.5 5v5"/>
+        </svg>
+      }
+    >
+    <div className={styles.aiSection}>
+      {isError ? (
+        <div className={styles.aiErrorBox}>
+          <svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="#c2410c" strokeWidth="1.4">
+            <path d="M7.5 1L14 13H1L7.5 1z"/>
+            <line x1="7.5" y1="6" x2="7.5" y2="9"/>
+            <circle cx="7.5" cy="11" r="0.5" fill="#c2410c"/>
+          </svg>
+          AI analysis could not be generated: {aiAnalysis?.error ?? 'unknown error'}.
+          Re-run discovery or contact your administrator.
+        </div>
+      ) : (
+        <>
+          {AI_SECTIONS.map(sec => (
+            <div key={sec.key} className={styles.aiSubSection}>
+              <div className={styles.aiSubHeader}>
+                <span className={styles.aiSubTitle}>{sec.label}</span>
+                <button
+                  className={styles.aiEditBtn}
+                  onClick={() => setEditing(editing === sec.key ? null : sec.key)}
+                  aria-label={editing === sec.key ? 'Done editing' : `Edit ${sec.label}`}
+                >
+                  {editing === sec.key ? 'Done' : 'Edit'}
+                </button>
+              </div>
+              {editing === sec.key ? (
+                <textarea
+                  className={styles.aiTextarea}
+                  value={edits[sec.key]}
+                  onChange={e => handleChange(sec.key, e.target.value)}
+                  autoFocus
+                  rows={8}
+                  aria-label={sec.label}
+                />
+              ) : (
+                <p className={styles.aiText}>
+                  {edits[sec.key] || <span className={styles.aiTextEmpty}>No content generated.</span>}
+                </p>
+              )}
+            </div>
+          ))}
+
+          <div className={styles.aiSaveRow}>
+            <button className={styles.aiSaveBtn} onClick={handleSave} disabled={!dirty}>
+              Save Report
+            </button>
+            <span className={styles.aiSaveHint}>Click Edit on any section to refine the wording.</span>
+          </div>
+        </>
+      )}
+    </div>
+    </Collapsible>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function DnsPage({ idToken }) {
-  const [domainInput, setDomainInput] = useState('');
-  const [isRunning,   setIsRunning]   = useState(false);
-  const [error,       setError]       = useState(null);
-  const [apiResult,   setApiResult]   = useState(null);  // raw API response
+  const [domainInput,    setDomainInput]    = useState('');
+  const [isRunning,      setIsRunning]      = useState(false);
+  const [error,          setError]          = useState(null);
+  const [apiResult,      setApiResult]      = useState(null);  // raw API response
+  const [discoveryPhase, setDiscoveryPhase] = useState('init');
+  // Holds edited AI section text — ref avoids re-render on every keystroke
+  const editedAiSections = useRef(null);
 
   const handleRun = async () => {
     const domain = domainInput.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
     if (!domain) return;
     setIsRunning(true);
+    setDiscoveryPhase('init');
     setError(null);
     setApiResult(null);
+    editedAiSections.current = null;
     try {
-      const data = await runDnsDiscovery(domain, idToken);
+      const data = await runDnsDiscovery(domain, idToken, setDiscoveryPhase);
       setApiResult(data);
     } catch (err) {
       setError(err.message || 'Discovery failed. Please try again.');
     } finally {
-      setIsRunning(false);
+      // Give floater time to show 'done' then fade
+      setTimeout(() => setIsRunning(false), 1400);
     }
   };
 
@@ -457,9 +599,17 @@ export default function DnsPage({ idToken }) {
   const appDomain   = f?.appDomain  ?? apiResult?.domain ?? '';
   const apexDomain  = f?.apexDomain ?? '';
   const score       = f?.score ?? null;
+  const aiAnalysis  = apiResult?.aiAnalysis ?? null;
 
   return (
     <div className={styles.page}>
+
+      {/* ── Discovery Progress Floater ── */}
+      <DiscoveryProgress
+        visible={isRunning}
+        phase={discoveryPhase}
+        domain={domainInput.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')}
+      />
 
       {/* ── Page Header ── */}
       <div className={styles.pageHeader}>
@@ -529,8 +679,8 @@ export default function DnsPage({ idToken }) {
         </div>
       )}
 
-      {/* ── Loading ── */}
-      {isRunning && (
+      {/* ── Loading — minimal inline state; floater handles detailed progress ── */}
+      {isRunning && !apiResult && (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>
             <svg width="40" height="40" viewBox="0 0 15 15" fill="none" stroke="var(--f5-red)" strokeWidth="1.2"
@@ -540,7 +690,7 @@ export default function DnsPage({ idToken }) {
           </div>
           <p className={styles.emptyTitle}>Running DNS discovery…</p>
           <p className={styles.emptySub}>
-            Probing {domainInput} — querying nameservers, measuring latency, enriching IPs via RIPE
+            Probing {domainInput} — see the progress window at the bottom-right corner.
           </p>
         </div>
       )}
@@ -613,7 +763,15 @@ export default function DnsPage({ idToken }) {
             <IssueSeverityCount issues={issues} />
           </div>
 
-          {/* ── 3. Findings ── */}
+          {/* ── 3. AI Analysis (generated inline with discovery, collapsed by default) ── */}
+          {aiAnalysis && (
+            <AiAnalysisSection
+              aiAnalysis={aiAnalysis}
+              onSectionsChange={sections => { editedAiSections.current = sections; }}
+            />
+          )}
+
+          {/* ── 4. Findings ── */}
           {issues.length > 0 && (
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>
@@ -643,7 +801,7 @@ export default function DnsPage({ idToken }) {
             </div>
           )}
 
-          {/* ── 4. Raw discovery data (collapsed) ── */}
+          {/* ── 5. Raw discovery data (collapsed) ── */}
           <div className={styles.section}>
             <Collapsible
               label="Raw Discovery Data"

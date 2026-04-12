@@ -247,11 +247,31 @@ echo ""
 if [[ "$TARGET" == "dns" || "$TARGET" == "both" ]]; then
   info "── DNS Discovery ────────────────────────────────────────────────────"
   if [[ "$SMOKE_ONLY" != "true" ]]; then
-    deploy_function \
-      "$DNS_FUNCTION" \
-      "$LAMBDA_DIR/dns_discovery" \
-      "$BUILD_DIR/dns_discovery.zip"
-    info "✅ dns_discovery deployed → $DNS_FUNCTION"
+    # Bundle handler.py + analysis_dns.py (AI analysis sibling module) into one zip.
+    # analysis_dns/handler.py is copied as analysis_dns.py so Python can import it directly.
+    local_zip="$BUILD_DIR/dns_discovery.zip"
+    analysis_src="$LAMBDA_DIR/analysis_dns/handler.py"
+    analysis_tmp="$LAMBDA_DIR/dns_discovery/analysis_dns.py"
+    [[ -f "$analysis_src" ]] || error "analysis_dns/handler.py not found at $analysis_src"
+    info "Zipping dns_discovery/handler.py + analysis_dns.py..."
+    cp "$analysis_src" "$analysis_tmp"
+    rm -f "$local_zip"
+    (cd "$LAMBDA_DIR/dns_discovery" && zip -q "$local_zip" handler.py analysis_dns.py)
+    rm -f "$analysis_tmp"   # clean up temp copy — never commit this file
+    SIZE=$(du -sh "$local_zip" | cut -f1)
+    info "Package size: $SIZE  →  $local_zip"
+    info "Pushing to Lambda: $DNS_FUNCTION"
+    aws lambda update-function-code \
+      --region        "$AWS_REGION" \
+      --function-name "$DNS_FUNCTION" \
+      --zip-file      "fileb://$local_zip" \
+      --query         '{FunctionName:FunctionName,CodeSize:CodeSize,LastModified:LastModified}' \
+      --output        table
+    info "Waiting for update to complete..."
+    aws lambda wait function-updated \
+      --region        "$AWS_REGION" \
+      --function-name "$DNS_FUNCTION"
+    info "✅ dns_discovery deployed → $DNS_FUNCTION (includes analysis_dns.py)"
   fi
   [[ "$SMOKE_TEST" == "true" ]] && smoke_test "$DNS_FUNCTION" "dns"
   echo ""

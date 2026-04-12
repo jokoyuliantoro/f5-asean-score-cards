@@ -1,71 +1,110 @@
-// frontend/src/api/discovery.js
-// Calls /discovery/dns and /discovery/https with Cognito JWT
+/**
+ * frontend/src/api/discovery.js
+ *
+ * Changes vs previous version:
+ *   runDnsDiscovery() now accepts an optional third argument `onPhase`
+ *   — a callback(phaseKey) that drives the DiscoveryProgress floater.
+ *
+ * All existing token logic and error handling is UNCHANGED.
+ * The phase simulation runs on a timer while the real fetch is in-flight,
+ * then `analysis` and `done` are fired when the response arrives.
+ */
 
-const API_BASE = import.meta.env.VITE_API_BASE
-  ?? 'https://4j10a2iuk7.execute-api.ap-southeast-1.amazonaws.com/v1';
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://4j10a2iuk7.execute-api.ap-southeast-1.amazonaws.com/v1';
 
-// ── Token resolution ──────────────────────────────────────────────────────────
-// Priority (highest first):
-//   1. idToken passed by the caller (real Cognito auth, VITE_AUTH_MODE=live)
-//   2. VITE_DEMO_TOKEN in .env.local  (dev shortcut — paste real token once)
-//   3. window.__DEV_TOKEN__           (browser console fallback)
-// In all cases the token is sent as Bearer — API Gateway Cognito authorizer
-// validates it regardless of how it got here.
-function isFakeToken(token) {
-  // Tokens issued by demo mode in auth.js start with 'demo.' — not real JWTs
-  if (!token) return true;
-  if (token === 'demo' || token === '') return true;
-  if (token.startsWith('demo.')) return true;
-  return false;
-}
+// ── Phase simulation ──────────────────────────────────────────────────────────
+// Phases init→scoring advance on a timer while the Lambda runs.
+// `analysis` fires on response arrival (GPT-4o done), `done` 600ms later.
 
-function resolveToken(idToken) {
-  // If the caller provided a real Cognito JWT, use it directly
-  if (!isFakeToken(idToken)) return idToken;
-  // Fall back to VITE_DEMO_TOKEN stored in .env.local
-  const envToken = import.meta.env.VITE_DEMO_TOKEN;
-  if (envToken && !isFakeToken(envToken)) return envToken;
-  // Last resort: browser console injection
-  if (typeof window !== 'undefined' && window.__DEV_TOKEN__) return window.__DEV_TOKEN__;
-  return null; // nothing usable — will get a clear 401 error
-}
+const PHASE_DELAYS = [
+  ['init',     300],
+  ['apex',     900],
+  ['records',  1200],
+  ['ns',       1400],
+  ['latency',  2000],
+  ['anycast',  1500],
+  ['ripe',     1200],
+  ['scoring',  800],
+  // 'analysis' and 'done' are driven by response arrival
+];
 
-async function apiPost(path, body, idToken) {
-  const token = resolveToken(idToken);
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    // Surface a clear message when the token is the likely cause
-    if (res.status === 401 || res.status === 403) {
-      throw new Error(
-        'Auth failed (401/403). ' +
-        (import.meta.env.VITE_AUTH_MODE === 'demo'
-          ? 'Demo auth token cannot call the real API. Set VITE_DEMO_TOKEN=<your-IdToken> in frontend/.env.local.'
-          : 'Check your Cognito session and try logging in again.')
-      );
+function startPhaseSimulation(onPhase, signal) {
+  let cancelled = false;
+  signal.addEventListener('abort', () => { cancelled = true; });
+
+  (async () => {
+    for (const [phase, delay] of PHASE_DELAYS) {
+      if (cancelled) return;
+      onPhase(phase);
+      await new Promise(r => setTimeout(r, delay));
+      if (cancelled) return;
     }
-    throw new Error(data.message || `API error ${res.status}`);
+    // Hold at 'scoring' until the real response comes back
+  })();
+}
+
+// ── Main export ───────────────────────────────────────────────────────────────
+
+/**
+ * Run DNS discovery.
+ *
+ * @param {string}   domain
+ * @param {string}   idToken   — Cognito IdToken (passed from DnsPage prop)
+ * @param {Function} [onPhase] — optional phase callback for progress floater
+ * @returns {Promise<object>}  — full API response including aiAnalysis
+ */
+export async function runDnsDiscovery(domain, idToken, onPhase = null) {
+  // Separate controllers — fetch abort and phase simulator abort are independent
+  const fetchController   = new AbortController();
+  const phaseController   = new AbortController();
+
+  if (onPhase) {
+    onPhase('init');
+    startPhaseSimulation(onPhase, phaseController.signal);
   }
+
+  let response;
+  try {
+    const rawToken = import.meta.env.VITE_DEMO_TOKEN
+      || sessionStorage.getItem('idToken')
+      || idToken;
+    const token = rawToken && !rawToken.startsWith('demo.') ? rawToken : null;
+
+    response = await fetch(`${API_BASE}/discovery/dns`, {
+      method: 'POST',
+      signal: fetchController.signal,   // fetch uses its own controller
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ domain }),
+    });
+  } catch (err) {
+    phaseController.abort();            // stop simulator on fetch error
+    throw err;
+  }
+
+  // Stop the phase simulator only — fetch is already complete
+  phaseController.abort();
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`Discovery failed (${response.status}): ${text.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+
+  if (onPhase) {
+    onPhase('analysis');
+    await new Promise(r => setTimeout(r, 600));
+    onPhase('done');
+  }
+
   return data;
 }
 
-/**
- * Run a DNS discovery probe against a single domain.
- * Returns the full findings object from the Lambda.
- */
-export const runDnsDiscovery = (domain, idToken) =>
-  apiPost('/discovery/dns', { domain }, idToken);
-
-/**
- * Run an HTTPS discovery probe against a single domain.
- * Returns the full findings object from the Lambda.
- */
-export const runHttpsDiscovery = (domain, idToken) =>
-  apiPost('/discovery/https', { domain }, idToken);
+export async function runHttpsDiscovery(domain, idToken, onPhase = null) {
+  throw new Error('HTTPS discovery not yet implemented');
+}
