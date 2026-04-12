@@ -265,3 +265,139 @@ OTP in demo mode: always `123456`
 - SES sandbox: only verified addresses receive OTP emails; demo mode bypasses this
 - HttpsPage: original stub, needs same treatment as DnsPage (Step 3+)
 - GitHub Actions CI/CD: not yet set up
+
+---
+
+## Full Step Roadmap
+
+### Step 1 — AI Analysis inline with DNS Discovery ✅ COMPLETE
+- `analysis_dns/handler.py` — Azure AI Foundry (GPT-4o), XML-tagged sections, graceful fallback
+- `dns_discovery/handler.py` — calls `_run_ai_analysis()` inline, persists `aiAnalysis` to DynamoDB
+- `DnsPage.jsx` — score first, AI Analysis collapsible (default collapsed), plain text + Edit mode
+- `DiscoveryProgress.jsx` — floating light-mode progress window with phase simulation
+- `discovery.js` — `onPhase` callback, dual AbortController (fetch vs simulator)
+- `analysis_ssm.tf` — SSM parameter placeholders + IAM policy extension for shared Lambda role
+
+---
+
+### Step 2 — Report Save / Load / Audit Log 🔄 NEXT
+**Backend:**
+- `backend/lambda/report/handler.py` — save, load, list, archive, delete (soft-delete pattern)
+  - Routes: `POST /v1/reports/dns`, `GET /v1/reports/dns`, `GET /v1/reports/dns/{id}`, `PATCH /v1/reports/dns/{id}`, `DELETE /v1/reports/dns/{id}`
+  - Soft delete: `status: active → archived → deleted` (only admin can hard delete)
+  - DynamoDB: `PK: REPORT#{domain}`, `SK: REPORT#{reportId}`, GSI by userId+createdAt
+- `backend/lambda/audit/handler.py` — write + query audit events
+  - Events: `discovery.run`, `report.save`, `report.load`, `report.archive`, `report.delete`, `analysis.generate`, `user.login`
+  - DynamoDB: `PK: AUDIT#{userId}`, `SK: AUDIT#{timestamp}#{eventType}`, GSI by timestamp for admin view
+  - `sponsoredBy` field links non-@f5.com users to their F5 sponsor
+
+**Frontend:**
+- `DnsPage.jsx` — saved reports dropdown (list by domain), wire Save button to API, confirmation after save
+- `AuditLogPage.jsx` — new left sidebar nav entry
+  - Table: timestamp, user, event type, domain/detail
+  - Filters: date range, event type, user (admin only sees all users filter)
+  - Access matrix: admin = all; @f5.com = own + sponsored partners; non-@f5.com = own only
+
+---
+
+### Step 3 — HTTPS Discovery
+**Backend:**
+- Rewrite `https_discovery/handler.py` — same depth as DNS:
+  - TLS floor version, TLS 1.3 cipher strength, chain key progression, leaf signature algorithm
+  - Session resumption, HTTP version via ALPN (`curl` + `openssl` methodology)
+  - Dual-region latency probe on app IPs (anycast detection, same pattern as DNS)
+  - HSTS, CSP, security headers
+  - F5 XC HTTP LB + WAF remediation mapping per finding
+  - `analysis_https` module bundled into zip (same pattern as `analysis_dns`)
+
+**Frontend:**
+- Rewrite `HttpsPage.jsx` — identical evidence-first layout to DnsPage
+  - AI analysis inline (same pattern, same collapsible default)
+  - Editable sections, save report, saved reports dropdown
+  - `DiscoveryProgress` floater reused with HTTPS-specific phases
+
+---
+
+### Step 4 — Discovery Agent
+- Evolve WSL Python script into proper cross-platform agent (Windows, Mac, Android, iOS)
+- Capabilities beyond Lambda vantage point:
+  - Multi-vantage anycast detection
+  - Full `curl` timing: DNS resolve, TCP connect, TLS handshake, TTFB, total — per NS, per IP
+  - Real user-perspective latency from the meeting room / customer location
+- Submits to API Gateway with `latencyContext.source: "agent"` and `sourceLabel: "Discovery Agent (on-site)"`
+- Overwrites Lambda result in DynamoDB with richer agent data
+- Packaged via PyInstaller — zero-install single executable
+- Connects via API Gateway with Cognito JWT or API key, exponential backoff retry
+- `--offline` demo mode for air-gapped environments
+
+---
+
+### Step 5 — Surface Probe & Deep Probe Pages
+- `SurfaceScanPage.jsx` and `DeepScanPage.jsx` — currently UI stubs with sample data
+- Wire to real backend probes (handlers already exist as stubs)
+- Surface Probe: HTTP response headers, WAF fingerprinting, exposed endpoints, robots.txt, error page leakage
+- Deep Probe: authenticated scan — requires credentials, tests post-login attack surface
+- Same evidence-first pattern: AI analysis + findings + raw data
+- Same save/load/audit pattern from Step 2
+
+---
+
+### Step 6 — Executive Brief Page
+- New page in SPA: competitive differentiation leave-behind for executive meetings
+- Components:
+  - Risk headline cards (one per pillar: DNS / HTTPS / Surface / Deep) with score + top issue
+  - Capability map table: finding category → legacy CDN-WAF gap → F5 XC capability
+  - Coverage bar chart across all four pillars (Chart.js)
+  - Scan coverage strip showing which pillars have been run
+- Print/PDF optimised as a polished leave-behind artifact
+- Data layer: `xcRemediation.js` maps eight finding categories to competitor gaps and F5 XC capabilities
+- Competitor references always generic: "legacy CDN-WAF vendors", "traditional DNS providers"
+
+---
+
+### Step 7 — GitHub Actions CI/CD
+- `.github/workflows/deploy.yml` with three jobs:
+  1. SPA build + deploy to S3 (`aws s3 sync`)
+  2. Terraform apply for XC infra (`volterraedge/volterra` provider)
+  3. XC cache purge via REST API (certificate-based auth)
+- Terraform state in S3 backend (already configured)
+- Secrets: AWS credentials, XC API cert, Azure OpenAI key — all via GitHub Secrets
+
+---
+
+### Step 8 — F5 XC HTTP Load Balancer (replace CloudFront)
+- Currently blocked on AWS Support case for CloudFront account verification
+- Once unblocked or bypassed: replace CloudFront with F5 XC HTTP Load Balancer
+- Benefits: auto-cert, WAF policy, Bot Defense, XC PoP delivery — dogfooding our own pitch
+- Terraform: `volterraedge/volterra` provider, XC HTTPS LB resource
+- SPA origin: existing S3 bucket with OAC
+
+---
+
+### Ongoing / Parallel (no fixed step)
+- **SES sandbox exit** — AWS support request to enable OTP to non-verified addresses; unblocks real user onboarding
+- **Multi-pillar dashboard** — aggregate scores across all four pillars on the Dashboard page; currently shows sample data
+- **Probe History page** — already stubbed in SPA, wire to real DynamoDB data with pagination, multi-select, bulk archive
+- **CloudFront unblock** — AWS Support case pending; needed before Step 8
+
+---
+
+## Claude Chat vs Claude Code — Working Model
+
+```
+Claude Chat  →  Design + architecture + review + update CLAUDE.md
+Claude Code  →  Build + deploy + debug
+```
+
+**Always start a Claude Code session with:**
+```
+Read CLAUDE.md at the repo root. Before writing any code, show me:
+1. Which files you will create
+2. Which files you will modify
+3. Any assumptions you are making
+```
+
+**After each step completes:**
+1. Upload key changed files to Claude Chat
+2. Update CLAUDE.md (current state, new patterns, new issues)
+3. Design the next step before opening Claude Code
