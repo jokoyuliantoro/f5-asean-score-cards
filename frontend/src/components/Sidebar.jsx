@@ -49,9 +49,10 @@ const NAV = [
     ],
   },
   {
-    section: 'AI Security',
+    section: 'AI Discovery',
+    comingSoon: true,
     items: [
-      { id: 'ai-discovery',   label: 'AI Discovery',   icon: 'aiGateway',   disabled: true },
+      { id: 'ai-discovery',   label: 'AI Discovery',   icon: 'brain',   disabled: true },
     ],
   },
   {
@@ -131,7 +132,24 @@ const ICONS = {
       <path d="M1.5 7.5H4" strokeLinecap="round"/>
     </svg>
   ),
-  // AI Security icons
+  // AI Discovery — brain icon (two lobes + central stem)
+  brain: (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      {/* central stem */}
+      <line x1="7.5" y1="13" x2="7.5" y2="7.2"/>
+      {/* left lobe */}
+      <path d="M7.5 7.2 C7.5 7.2 6.4 7.6 5.3 7.2 C3.8 6.7 3 5.5 3 4.3 C3 2.7 4.1 1.5 5.4 1.5 C6.2 1.5 6.9 1.9 7.5 2.7"/>
+      {/* right lobe */}
+      <path d="M7.5 7.2 C7.5 7.2 8.6 7.6 9.7 7.2 C11.2 6.7 12 5.5 12 4.3 C12 2.7 10.9 1.5 9.6 1.5 C8.8 1.5 8.1 1.9 7.5 2.7"/>
+      {/* left inner crease */}
+      <path d="M3.8 5.2 C4.2 6 5 6.5 5.8 6.6"/>
+      {/* right inner crease */}
+      <path d="M11.2 5.2 C10.8 6 10 6.5 9.2 6.6"/>
+      {/* base feet */}
+      <line x1="5.5" y1="13" x2="9.5" y2="13"/>
+    </svg>
+  ),
+  // kept for potential future use
   aiGateway: (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4">
       <rect x="2" y="4" width="11" height="7" rx="1.5"/>
@@ -192,6 +210,9 @@ export default function Sidebar({ active = 'dashboard', onNav, role = 'readonly'
           <div key={group.section} className={`${styles.section} ${gi > 0 ? styles.sectionBorder : ''}`}>
             <div className={styles.sectionLabel}>
               {group.section}
+              {group.comingSoon && (
+                <span className={styles.comingSoonBadge}>Soon</span>
+              )}
             </div>
             {group.items
               .filter(item => !item.adminOnly || role === 'admin')

@@ -135,3 +135,24 @@
   opacity: 0.45;
 }
 .subItemActive .subDot { opacity: 1; background: var(--f5-blue); }
+
+/* Disabled nav items (AI Discovery placeholders) */
+.navItemDisabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* "Soon" pill next to section label */
+.comingSoonBadge {
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--f5-N200);
+  color: var(--f5-N400);
+  border-radius: 3px;
+  padding: 1px 5px;
+  vertical-align: middle;
+}
