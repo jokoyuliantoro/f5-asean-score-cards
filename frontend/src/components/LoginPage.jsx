@@ -4,7 +4,7 @@ import OtpInput from './OtpInput';
 import ResendTimer from './ResendTimer';
 import PrivacyFooter from './PrivacyFooter';
 import { getRoleForEmail, INITIAL_USERS } from '../data/users';
-import { initiateAuth, respondToChallenge } from '../api/auth';
+import { initiateAuth, respondToChallenge, AUTH_MODE } from '../api/auth';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage({ onAuthenticated, users = INITIAL_USERS }) {
