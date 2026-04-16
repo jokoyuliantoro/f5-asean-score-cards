@@ -9,6 +9,7 @@
 #   - Node.js 20+ installed
 #   - pip3 / python3.12 available
 #   - TF_STATE_BUCKET env var set (or passed as arg)
+#   - TF_VAR_cloudflare_api_token env var set
 #
 # Usage:
 #   TF_STATE_BUCKET=my-tf-state-bucket ./scripts/deploy.sh
@@ -16,7 +17,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TERRAFORM_DIR="$REPO_ROOT/backend/terraform"
+TERRAFORM_DIR="$REPO_ROOT/backend/terraform-cloudflare"
 FRONTEND_DIR="$REPO_ROOT/frontend"
 LAMBDA_DIR="$REPO_ROOT/backend/lambda"
 BUILD_DIR="$TERRAFORM_DIR/.build"
@@ -35,7 +36,8 @@ command -v node      >/dev/null 2>&1 || error "node not found. Install: sudo apt
 command -v python3   >/dev/null 2>&1 || error "python3 not found."
 command -v pip3      >/dev/null 2>&1 || error "pip3 not found."
 
-[[ -z "${TF_STATE_BUCKET:-}" ]] && error "TF_STATE_BUCKET env var not set. Export it before running."
+[[ -z "${TF_STATE_BUCKET:-}" ]]             && error "TF_STATE_BUCKET env var not set."
+[[ -z "${TF_VAR_cloudflare_api_token:-}" ]] && error "TF_VAR_cloudflare_api_token env var not set."
 
 TFVARS="$TERRAFORM_DIR/terraform.tfvars"
 [[ ! -f "$TFVARS" ]] && error "terraform.tfvars not found at $TFVARS. Copy .example and fill in values."
@@ -84,17 +86,18 @@ terraform apply "$BUILD_DIR/tfplan"
 API_URL=$(terraform output -raw api_gateway_url)
 COGNITO_CLIENT_ID=$(terraform output -raw cognito_client_id)
 S3_BUCKET=$(terraform output -raw spa_bucket)
-CF_ID=$(terraform output -raw cloudfront_id)
 APP_URL=$(terraform output -raw app_url)
 cd "$REPO_ROOT"
 
 info "API URL:      $API_URL"
 info "Cognito ID:   $COGNITO_CLIENT_ID"
 info "S3 Bucket:    $S3_BUCKET"
-info "CloudFront:   $CF_ID"
+info "App URL:      $APP_URL"
 
 # ── 5. Inject runtime config into SPA build ───────────────────────────────────
-# The frontend reads window.__ENV__ which is injected into index.html
+# The frontend reads window.__ENV__ which is injected into index.html at deploy time.
+# This avoids baking config into the Vite build so the same dist/ can be redeployed
+# with different backend URLs without rebuilding.
 info "Injecting runtime config into index.html..."
 RUNTIME_CONFIG="<script>window.__ENV__={API_URL:\"$API_URL\",COGNITO_CLIENT_ID:\"$COGNITO_CLIENT_ID\"};</script>"
 
@@ -104,25 +107,43 @@ sed -i "s|</head>|$RUNTIME_CONFIG</head>|" "$FRONTEND_DIR/dist/index.html"
 # ── 6. Deploy SPA to S3 ───────────────────────────────────────────────────────
 info "Syncing SPA to S3..."
 
-# Hashed assets — long cache
+# Hashed assets (JS/CSS with content hash in filename) — long cache
 aws s3 sync "$FRONTEND_DIR/dist/" "s3://$S3_BUCKET/" \
   --delete \
   --exclude "index.html" \
   --cache-control "public,max-age=31536000,immutable" \
   --quiet
 
-# index.html — no cache (always fresh)
+# index.html — no cache (always fresh, contains injected runtime config)
 aws s3 cp "$FRONTEND_DIR/dist/index.html" "s3://$S3_BUCKET/index.html" \
   --cache-control "no-cache,no-store,must-revalidate" \
   --content-type "text/html"
 
-# ── 7. Invalidate CloudFront cache ────────────────────────────────────────────
-info "Invalidating CloudFront cache..."
-aws cloudfront create-invalidation \
-  --distribution-id "$CF_ID" \
-  --paths "/*" \
-  --query 'Invalidation.Id' \
-  --output text
+# ── 7. Purge Cloudflare cache ─────────────────────────────────────────────────
+# Purge everything so Cloudflare fetches fresh assets from S3 origin.
+# Requires TF_VAR_cloudflare_api_token to have Zone:Cache Purge permission.
+info "Purging Cloudflare cache..."
+
+# Extract zone_id from Terraform state (already resolved during apply)
+CF_ZONE_ID=$(cd "$TERRAFORM_DIR" && terraform output -json 2>/dev/null \
+  | python3 -c "import sys,json; print('')" 2>/dev/null || echo "")
+
+# Fallback: read zone_id directly from Cloudflare API using the zone name
+CF_ZONE_NAME=$(grep cloudflare_zone_name "$TFVARS" | cut -d'"' -f2)
+CF_ZONE_ID=$(curl -s -X GET \
+  "https://api.cloudflare.com/client/v4/zones?name=$CF_ZONE_NAME" \
+  -H "Authorization: Bearer $TF_VAR_cloudflare_api_token" \
+  -H "Content-Type: application/json" \
+  | python3 -c "import sys,json; data=json.load(sys.stdin); print(data['result'][0]['id'])")
+
+PURGE_RESULT=$(curl -s -X POST \
+  "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
+  -H "Authorization: Bearer $TF_VAR_cloudflare_api_token" \
+  -H "Content-Type: application/json" \
+  --data '{"purge_everything":true}' \
+  | python3 -c "import sys,json; data=json.load(sys.stdin); print('OK' if data['success'] else 'FAILED: '+str(data['errors']))")
+
+info "Cloudflare cache purge: $PURGE_RESULT"
 
 echo ""
 echo -e "${GREEN}✅ Deploy complete!${NC}"

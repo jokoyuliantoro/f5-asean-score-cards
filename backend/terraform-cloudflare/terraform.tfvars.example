@@ -1,0 +1,26 @@
+# ── Fill these in before running deploy.sh ────────────────────────────────────
+# This file is NOT committed to git (it's in .gitignore).
+# Copy this to terraform.tfvars and fill in your values.
+
+aws_region     = "ap-southeast-1"
+environment    = "prod"
+app_name       = "f5-scorecard"
+
+# The @f5.com address that SES will send OTPs from.
+# You must verify this address in SES before first deploy.
+ses_from_email = "j.yuliantoro@f5.com"
+
+admin_email    = "j.yuliantoro@f5.com"
+
+# ── Cloudflare ─────────────────────────────────────────────────────────────────
+# Your root domain as registered in Cloudflare (must already have a zone)
+cloudflare_zone_name = "yourdomain.com"
+
+# Subdomain for the app — result: scorecard.yourdomain.com
+# Use "@" for root domain
+cloudflare_subdomain = "scorecard"
+
+# DO NOT put cloudflare_api_token here.
+# Set it as an environment variable before running terraform:
+#   export TF_VAR_cloudflare_api_token="your-token-here"
+# Required token permissions: Zone > Zone (Read), Zone > DNS (Edit), Zone > Page Rules (Edit)
