@@ -30,7 +30,7 @@ const NAV = [
     ],
   },
   {
-    section: 'Security',
+    section: 'Web and API Security',
     items: [
       {
         id: 'surface-group', label: 'Surface Discovery', icon: 'scan', badge: 'Public', badgeType: 'neutral',
@@ -49,11 +49,17 @@ const NAV = [
     ],
   },
   {
+    section: 'AI Security',
+    items: [
+      { id: 'ai-discovery',   label: 'AI Discovery',   icon: 'aiGateway',   disabled: true },
+    ],
+  },
+  {
     section: 'Manage',
     items: [
-      { id: 'accounts',     label: 'Accounts',     icon: 'accounts' },
+      { id: 'accounts',     label: 'Accounts',         icon: 'accounts' },
       { id: 'scan-history', label: 'Discovery History', icon: 'history'  },
-      { id: 'users',        label: 'Users',        icon: 'users', adminOnly: true },
+      { id: 'users',        label: 'Users',            icon: 'users', adminOnly: true },
     ],
   },
 ];
@@ -104,7 +110,6 @@ const ICONS = {
     </svg>
   ),
   accounts: (
-    /* Building / enterprise icon — two floors + roof line */
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4">
       <rect x="2" y="4" width="11" height="9" rx="1"/>
       <path d="M5 13V9h5v4"/>
@@ -114,7 +119,6 @@ const ICONS = {
     </svg>
   ),
   users: (
-    /* Person silhouette — the old accounts icon */
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4">
       <circle cx="7.5" cy="5" r="2.5"/>
       <path d="M2 13c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>
@@ -125,6 +129,23 @@ const ICONS = {
       <circle cx="7.5" cy="7.5" r="6"/>
       <path d="M7.5 4.5v3.5l2.5 1.5"/>
       <path d="M1.5 7.5H4" strokeLinecap="round"/>
+    </svg>
+  ),
+  // AI Security icons
+  aiGateway: (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <rect x="2" y="4" width="11" height="7" rx="1.5"/>
+      <circle cx="7.5" cy="7.5" r="1.8"/>
+      <line x1="2" y1="7.5" x2="5.7" y2="7.5"/>
+      <line x1="9.3" y1="7.5" x2="13" y2="7.5"/>
+    </svg>
+  ),
+  aiAssistant: (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <path d="M2 11.5V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v5.5a1 1 0 0 1-1 1H5L2 13v-1.5z"/>
+      <circle cx="5.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
+      <circle cx="7.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
+      <circle cx="9.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
     </svg>
   ),
   chevron: (
@@ -147,6 +168,7 @@ export default function Sidebar({ active = 'dashboard', onNav, role = 'readonly'
     );
 
   const handleItemClick = (item) => {
+    if (item.disabled) return;
     if (item.children) {
       toggleGroup(item.id);
       onNav?.(item.children[0].id);
@@ -168,18 +190,26 @@ export default function Sidebar({ active = 'dashboard', onNav, role = 'readonly'
       <div className={styles.navScroll}>
         {NAV.map((group, gi) => (
           <div key={group.section} className={`${styles.section} ${gi > 0 ? styles.sectionBorder : ''}`}>
-            <div className={styles.sectionLabel}>{group.section}</div>
+            <div className={styles.sectionLabel}>
+              {group.section}
+            </div>
             {group.items
               .filter(item => !item.adminOnly || role === 'admin')
               .map(item => {
-              const isActive = active === item.id || item.children?.some(c => c.id === active);
+              const isActive = !item.disabled && (active === item.id || item.children?.some(c => c.id === active));
               const isOpen   = openGroups.includes(item.id);
               return (
                 <div key={item.id}>
                   <button
-                    className={[styles.navItem, isActive ? styles.active : ''].join(' ')}
+                    className={[
+                      styles.navItem,
+                      isActive ? styles.active : '',
+                      item.disabled ? styles.navItemDisabled : '',
+                    ].join(' ')}
                     onClick={() => handleItemClick(item)}
                     aria-expanded={item.children ? isOpen : undefined}
+                    disabled={item.disabled}
+                    title={item.disabled ? 'Coming soon' : undefined}
                   >
                     <span className={styles.icon}>{ICONS[item.icon]}</span>
                     <span className={styles.label}>{item.label}</span>
