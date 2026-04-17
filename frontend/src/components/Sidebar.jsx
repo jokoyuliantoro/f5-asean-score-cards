@@ -16,15 +16,15 @@ const NAV = [
       {
         id: 'dns-group', label: 'DNS Discovery', icon: 'dns',
         children: [
-          { id: 'dns',           label: 'Report'    },
-          { id: 'dns-lifecycle', label: 'Lifecycle' },
+          { id: 'dns',           label: 'Online (AWS Lambda)'   },
+          { id: 'dns-lifecycle', label: 'Local (Python Script)' },
         ],
       },
       {
         id: 'https-group', label: 'HTTPS Discovery', icon: 'https',
         children: [
-          { id: 'https',           label: 'Report'    },
-          { id: 'https-lifecycle', label: 'Lifecycle' },
+          { id: 'https',           label: 'Online (AWS Lambda)'   },
+          { id: 'https-lifecycle', label: 'Local (Python Script)' },
         ],
       },
     ],
@@ -200,7 +200,7 @@ export default function Sidebar({ active = 'dashboard', onNav, role = 'readonly'
       <div className={styles.logoArea}>
         <F5Logo size={36} />
         <span className={styles.logoText}>
-          ASEAN<br />
+          ASEAN Presales<br />
           <span className={styles.logoSub}>Resilience Score Card</span>
         </span>
       </div>

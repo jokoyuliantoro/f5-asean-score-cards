@@ -175,7 +175,7 @@ export default function UsersPage({ currentUserEmail, users: initialUsers, onUse
       {/* ── Page header: fixed, never scrolls ── */}
       <div className={styles.pageHeader}>
         <div className={styles.pageTitleGroup}>
-          <h1 className={styles.pageTitle}>Users</h1>
+          <h1 className={styles.pageTitle}>[MOCK-UP] Users</h1>
           <p className={styles.pageSubtitle}>
             Manage access roles for registered @f5.com users.
             Unregistered @f5.com addresses default to <strong>Read-Only</strong>.

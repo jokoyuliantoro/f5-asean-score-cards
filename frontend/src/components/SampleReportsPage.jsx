@@ -12,7 +12,7 @@ const PILLARS = [
     description: 'Resilience · Stability · Response Time',
     score: DNS_SAMPLE.overallScore,
     status: DNS_SAMPLE.status,
-    coverage: '4 nameserver clusters measured',
+    coverage: '4 nameservers measured',
     icon: (
       <svg width="22" height="22" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.3">
         <circle cx="7.5" cy="7.5" r="6"/>

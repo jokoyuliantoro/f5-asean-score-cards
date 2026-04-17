@@ -11,8 +11,9 @@
  */
 
 const API_BASE =
+  (window.__ENV__ && window.__ENV__.API_URL) ||
   import.meta.env.VITE_API_BASE_URL ||
-  'https://4j10a2iuk7.execute-api.ap-southeast-1.amazonaws.com/v1';
+  'https://0ol0f4sixh.execute-api.ap-southeast-1.amazonaws.com/v1';
 
 // ── Phase simulation ──────────────────────────────────────────────────────────
 // Phases init→scoring advance on a timer while the Lambda runs.

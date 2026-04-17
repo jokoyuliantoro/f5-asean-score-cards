@@ -3,7 +3,7 @@ import F5Logo from './F5Logo';
 import OtpInput from './OtpInput';
 import ResendTimer from './ResendTimer';
 import PrivacyFooter from './PrivacyFooter';
-import { getRoleForEmail, INITIAL_USERS } from '../data/users';
+import { getRoleForEmail, INITIAL_USERS, DEMO_OTP } from '../data/users';
 import { initiateAuth, respondToChallenge, AUTH_MODE } from '../api/auth';
 import styles from './LoginPage.module.css';
 
@@ -48,6 +48,11 @@ export default function LoginPage({ onAuthenticated, users = INITIAL_USERS }) {
 
   // Step 2 — submit OTP to Cognito RespondToAuthChallenge, get IdToken
   const handleOtpComplete = async completeOtp => {
+    if (completeOtp.trim() !== DEMO_OTP) {
+      setOtpError('Invalid code. Please try again.');
+      setOtp('');
+      return;
+    }
     setIsLoading(true);
     try {
       const tokens = await respondToChallenge(email, session, completeOtp);

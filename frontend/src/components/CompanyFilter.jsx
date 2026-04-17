@@ -6,7 +6,7 @@ export default function CompanyFilter({ value, onChange }) {
 
   return (
     <div className={styles.wrap}>
-      <span className={styles.prefix}>Dashboard for</span>
+      <span className={styles.prefix}>[MOCK-UP] Dashboard for</span>
       <div className={styles.selectWrap}>
         <select
           className={styles.select}

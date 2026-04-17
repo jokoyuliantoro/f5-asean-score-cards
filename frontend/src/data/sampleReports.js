@@ -8,12 +8,12 @@ export const SAMPLE_DATE     = 'March 2025';
 
 // ── DNS ───────────────────────────────────────────────────────────────────────
 export const DNS_SAMPLE = {
-  overallScore: 76,
-  status: 'Good',
+  overallScore: 27,
+  status: 'At Risk',
   summary:
     'DNS infrastructure performs well under normal load but shows single-point-of-failure risk '
-    + 'with only one authoritative nameserver cluster active in the ASEAN region. '
-    + 'DNSSEC is partially configured — 3 of 5 zones are signed.',
+    + 'with only one authoritative nameserver cluster active. '
+    + 'DNSSEC is not enabled.',
   dimensions: [
     {
       label: 'Resilience',
