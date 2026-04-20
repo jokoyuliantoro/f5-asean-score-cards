@@ -73,13 +73,14 @@ backend/
       define_auth_challenge.py
       create_auth_challenge.py
       verify_auth_challenge.py
-  terraform/
+  terraform-cloudflare/
     main.tf, variables.tf, outputs.tf
     lambda.tf          — all Lambda functions + shared IAM role
     api_gateway.tf     — HTTP API v2 routes
     audit.tf           — audit Lambda + POST /audit + GET /audit routes
     analysis_ssm.tf    — Azure OpenAI SSM params + IAM policy extension
     latency_probe.tf   — dual-region probe Lambdas
+    cloudflare.tf      — DNS and SPA rewrite to AWS S3
     s3.tf, cognito.tf, dynamodb.tf
 
 scripts/
