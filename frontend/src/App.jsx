@@ -13,7 +13,9 @@ import SurfaceScanPage    from './components/SurfaceScanPage';
 import DeepScanPage       from './components/DeepScanPage';
 import HttpsPage          from './components/HttpsPage';
 import LifecyclePage      from './components/LifecyclePage';
+import AuditLogPage       from './components/AuditLogPage';
 import { INITIAL_USERS, getRoleForEmail } from './data/users';
+import { logEvent, clearEvents, EVENT_TYPES } from './data/auditLog';
 import styles from './App.module.css';
 
 // ── Section → topbar title mapping ───────────────────────────────────────────
@@ -42,6 +44,7 @@ export default function App() {
     setRole(liveRole);
     setIdToken(token);
     setNavItem(liveRole === 'readonly' ? 'sample-reports' : 'dashboard');
+    logEvent(EVENT_TYPES.LOGIN, email, liveRole, {}, token);
   };
 
   if (!email) {
@@ -49,12 +52,14 @@ export default function App() {
   }
 
   const handleNav = (id) => {
-    if (role === 'readonly' && id !== 'sample-reports') return;
+    if (role === 'readonly' && id !== 'sample-reports' && id !== 'audit-log') return;
     if (id === 'users' && role !== 'admin') return;
     setNavItem(id);
   };
 
   const handleLogout = () => {
+    logEvent(EVENT_TYPES.LOGOUT, email, role, {}, idToken);
+    clearEvents();
     setEmail(null);
     setRole(null);
     setIdToken(null);
@@ -67,7 +72,7 @@ export default function App() {
       case 'sample-reports':  return <SampleReportsPage />;
       case 'accounts':        return <AccountsPage />;
       case 'scan-history':    return <ScanHistoryPage />;
-      case 'dns':             return <DnsPage idToken={idToken} />;
+      case 'dns':             return <DnsPage idToken={idToken} currentUserEmail={email} currentUserRole={role} />;
       case 'dns-lifecycle':   return <LifecyclePage pillar="dns" />;
       case 'https':           return <HttpsPage idToken={idToken} />;
       case 'https-lifecycle': return <LifecyclePage pillar="https" />;
@@ -79,6 +84,8 @@ export default function App() {
         return role === 'admin'
           ? <UsersPage currentUserEmail={email} users={users} onUsersChange={setUsers} />
           : null;
+      case 'audit-log':
+        return <AuditLogPage currentUserEmail={email} role={role} idToken={idToken} />;
       default:
         return (
           <div className={styles.placeholder}>

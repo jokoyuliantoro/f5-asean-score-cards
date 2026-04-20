@@ -48,6 +48,7 @@ export default function LoginPage({ onAuthenticated, users = INITIAL_USERS }) {
 
   // Step 2 — submit OTP to Cognito RespondToAuthChallenge, get IdToken
   const handleOtpComplete = async completeOtp => {
+    if (isLoading) return;
     if (completeOtp.trim() !== DEMO_OTP) {
       setOtpError('Invalid code. Please try again.');
       setOtp('');

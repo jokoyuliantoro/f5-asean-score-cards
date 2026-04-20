@@ -49,7 +49,7 @@ const NAV = [
     ],
   },
   {
-    section: 'AI Discovery',
+    section: 'AI Security',
     comingSoon: true,
     items: [
       { id: 'ai-discovery',   label: 'AI Discovery',   icon: 'brain',   disabled: true },
@@ -60,6 +60,7 @@ const NAV = [
     items: [
       { id: 'accounts',     label: 'Accounts',         icon: 'accounts' },
       { id: 'scan-history', label: 'Discovery History', icon: 'history'  },
+      { id: 'audit-log',    label: 'Audit Log',         icon: 'audit'    },
       { id: 'users',        label: 'Users',            icon: 'users', adminOnly: true },
     ],
   },
@@ -130,6 +131,14 @@ const ICONS = {
       <circle cx="7.5" cy="7.5" r="6"/>
       <path d="M7.5 4.5v3.5l2.5 1.5"/>
       <path d="M1.5 7.5H4" strokeLinecap="round"/>
+    </svg>
+  ),
+  audit: (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+      <rect x="2" y="1.5" width="11" height="12" rx="1.5"/>
+      <line x1="4.5" y1="5"   x2="10.5" y2="5"/>
+      <line x1="4.5" y1="7.5" x2="10.5" y2="7.5"/>
+      <line x1="4.5" y1="10"  x2="8"    y2="10"/>
     </svg>
   ),
   // AI Discovery — brain icon (two lobes + central stem)

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { runDnsDiscovery } from '../api/discovery';
 import { scoreColor, fmtTimestamp } from '../data/appData';
 import DiscoveryProgress from './DiscoveryProgress';
+import { logEvent, EVENT_TYPES } from '../data/auditLog';
 import styles from './DnsPage.module.css';
 
 // ── Score deduction rules (mirrors backend _compute_score logic) ──────────────
@@ -564,7 +565,7 @@ function AiAnalysisSection({ aiAnalysis, onSectionsChange }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-export default function DnsPage({ idToken }) {
+export default function DnsPage({ idToken, currentUserEmail, currentUserRole }) {
   const [domainInput,    setDomainInput]    = useState('');
   const [isRunning,      setIsRunning]      = useState(false);
   const [error,          setError]          = useState(null);
@@ -574,6 +575,7 @@ export default function DnsPage({ idToken }) {
   const editedAiSections = useRef(null);
 
   const handleRun = async () => {
+    if (isRunning) return;
     const domain = domainInput.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
     if (!domain) return;
     setIsRunning(true);
@@ -581,11 +583,15 @@ export default function DnsPage({ idToken }) {
     setError(null);
     setApiResult(null);
     editedAiSections.current = null;
+    logEvent(EVENT_TYPES.DNS_PROBE_START, currentUserEmail, currentUserRole, { domain }, idToken);
     try {
       const data = await runDnsDiscovery(domain, idToken, setDiscoveryPhase);
       setApiResult(data);
+      const score = data?.findings?.score ?? null;
+      logEvent(EVENT_TYPES.DNS_PROBE_DONE, currentUserEmail, currentUserRole, { domain, score }, idToken);
     } catch (err) {
       setError(err.message || 'Discovery failed. Please try again.');
+      logEvent(EVENT_TYPES.DNS_PROBE_ERROR, currentUserEmail, currentUserRole, { domain, error: err.message }, idToken);
     } finally {
       // Give floater time to show 'done' then fade
       setTimeout(() => setIsRunning(false), 1400);
