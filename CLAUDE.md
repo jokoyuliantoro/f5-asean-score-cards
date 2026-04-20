@@ -26,7 +26,7 @@ printable PDF report — all before credentials are granted.
 - Cognito User Pool: `ap-southeast-1_ApP6AbUqs` / Client: `1gnr4oqpj7jfqcdk7s9ljnnceo`
 - SES: `joko.yuliantoro@gmail.com` (sandbox — only verified addresses receive email)
 - Parameter Store prefix: `/f5-asean/` and `/f5-asean/azure-openai/`
-- Terraform state in S3, all infra in `backend/terraform/`
+- Terraform state in S3, all infra in `backend/terraform-cloudflare/`
 
 ### AI Analysis
 - Azure AI Foundry (GPT-4o): `https://joko-asean-score-cards-resource.services.ai.azure.com/...`
