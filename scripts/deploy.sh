@@ -7,7 +7,7 @@ npm run build
 # Inject runtime config
 echo ""
 echo "Inject runtime config"
-sed -i 's|</head>|<script>window.__ENV__={API_URL:"https://4j10a2iuk7.execute-api.ap-southeast-1.amazonaws.com/v1",COGNITO_CLIENT_ID:"c2jgnds8kc9lk8rin6qj8fnco"};</script></head>|' dist/index.html
+sed -i 's|</head>|<script>window.__ENV__={API_URL:"https://4j10a2iuk7.execute-api.ap-southeast-1.amazonaws.com/v1",COGNITO_CLIENT_ID:"5a3vcf65qbof6ul7popqsaav5d"};</script></head>|' dist/index.html
 
 # Deploy everything (assets changed due to rebuild)
 echo ""

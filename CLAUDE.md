@@ -19,19 +19,29 @@ printable PDF report — all before credentials are granted.
 - Chart.js via react-chartjs-2
 - Auth: Cognito OTP flow (no password), demo mode fixed OTP = `123456`
 - Dev: `npm run dev` → http://localhost:5173
+- Runtime config injected into `index.html` at deploy time via `window.__ENV__`
 
 ### Backend (AWS ap-southeast-1)
 - API Gateway (HTTP API v2): `https://4j10a2iuk7.execute-api.ap-southeast-1.amazonaws.com/v1`
 - Lambda (Python 3.12), DynamoDB single-table (`f5-asean-score-cards-prod`)
-- Cognito User Pool: `ap-southeast-1_ApP6AbUqs` / Client: `1gnr4oqpj7jfqcdk7s9ljnnceo`
+- Cognito User Pool: `ap-southeast-1_ApP6AbUqs` / Client: `5a3vcf65qbof6ul7popqsaav5d`
 - SES: `joko.yuliantoro@gmail.com` (sandbox — only verified addresses receive email)
 - Parameter Store prefix: `/f5-asean/` and `/f5-asean/azure-openai/`
-- Terraform state in S3, all infra in `backend/terraform-cloudflare/`
+- Terraform state in S3 bucket `f5-asean-score-card-s3`, key `scorecard/terraform.tfstate`
+- All infra in `backend/terraform-cloudflare/`
+
+### CDN / DNS (Cloudflare)
+- Domain: `asean-score-cards.f5-adsp.com`
+- Cloudflare zone: `f5-adsp.com` (zone ID: `5fbe28ebf0a1447e7518efcd6eb07efc`)
+- S3 bucket: `f5-asean-score-cards-spa-prod-5ecbdcce`
+- Cloudflare Worker `f5_asean_score_cards_spa_router`: handles SPA routing and Host header rewrite
+- SSL mode: Full
 
 ### AI Analysis
-- Azure AI Foundry (GPT-4o): `https://joko-asean-score-cards-resource.services.ai.azure.com/...`
+- Azure AI Foundry (GPT-4o): `https://joko-aifoundry.openai.azure.com/openai/v1/chat/completions`
 - SSM params: `/f5-asean/azure-openai/endpoint`, `/key`, `/deployment`
 - `analysis_dns/handler.py` is bundled as `analysis_dns.py` inside the `dns_discovery` zip
+- **Critical:** use `/openai/v1/chat/completions` not `/openai/v1/responses`
 
 ---
 
@@ -40,22 +50,26 @@ printable PDF report — all before credentials are granted.
 frontend/
   src/
     api/
-      auth.js          — Cognito CUSTOM_AUTH OTP flow
+      auth.js          — Cognito CUSTOM_AUTH OTP flow (CLIENT_ID from window.__ENV__)
       discovery.js     — runDnsDiscovery(domain, idToken, onPhase), runHttpsDiscovery stub
-      auditLog.js      — postAuditEvent(), fetchAuditEvents() — audit API client
+      users.js         — listUsers, createUser, updateUser, deleteUser, resolveRole
     components/
-      App.jsx          — top-level routing switch, idToken state
+      App.jsx          — top-level routing switch, resolves role from DynamoDB at login
       DnsPage.jsx      — DNS discovery report (COMPLETE)
       DnsPage.module.css
-      DiscoveryProgress.jsx     — floating progress floater (light mode)
+      DiscoveryProgress.jsx
       DiscoveryProgress.module.css
-      AuditLogPage.jsx          — persistent audit log viewer (COMPLETE)
-      AuditLogPage.module.css
       HttpsPage.jsx    — pending rewrite (original stub)
+      AuditLogPage.jsx — session audit log (all roles, filtered by role)
+      AuditLogPage.module.css
+      UsersPage.jsx    — admin-only user management, wired to DynamoDB via /users Lambda
+      UsersPage.module.css
+      Sidebar.jsx      — nav with adminOnly items filtered by role
     data/
       appData.js       — scoreColor, fmtTimestamp, SCAN_GROUPS
-      auditLog.js      — in-memory store + write-through to DynamoDB
-      users.js         — INITIAL_USERS, getRoleForEmail
+      auditLog.js      — in-session audit log store (sessionStorage)
+      users.js         — INITIAL_USERS, ROLE_LABELS, ROLE_COLORS, DEMO_OTP,
+                         getRoleForEmail (seed fallback), getRoleFromSeed
 
 backend/
   lambda/
@@ -67,33 +81,110 @@ backend/
       handler.py       — original stub, pending rewrite
     latency_probe/
       handler.py       — shared TCP latency probe, deployed in SEA + USE1
-    audit/
-      handler.py       — persistent audit log Lambda (COMPLETE)
     auth/
       define_auth_challenge.py
-      create_auth_challenge.py
+      create_auth_challenge.py  — DEMO_OTP_ENABLED must be 'true' for demo mode
       verify_auth_challenge.py
-  terraform-cloudflare/
+    audit/
+      handler.py       — write/query audit events (POST /audit, GET /audit)
+    users/
+      handler.py       — user registry CRUD (GET/POST /users, PUT/DELETE /users/{email})
+  terraform-cloudflare/   ← ACTIVE terraform directory
     main.tf, variables.tf, outputs.tf
     lambda.tf          — all Lambda functions + shared IAM role
-    api_gateway.tf     — HTTP API v2 routes
-    audit.tf           — audit Lambda + POST /audit + GET /audit routes
+    api_gateway.tf     — HTTP API v2 routes (allow_methods includes PUT, DELETE)
     analysis_ssm.tf    — Azure OpenAI SSM params + IAM policy extension
-    latency_probe.tf   — dual-region probe Lambdas
-    cloudflare.tf      — DNS and SPA rewrite to AWS S3
-    s3.tf, cognito.tf, dynamodb.tf
+    latency_probe.tf   — dual-region probe Lambdas (SEA + USE1)
+    users.tf           — users Lambda + API Gateway routes
+    s3.tf, cognito.tf, dynamodb.tf, cloudflare.tf, parameter_store.tf
 
 scripts/
-  deploy_handlers.sh   — hot-deploy dns_discovery and/or https_discovery handlers
-  deploy_audit.sh      — hot-deploy audit Lambda (--infra for first-time Terraform)
-  deploy.sh            — full Terraform + frontend deploy
-  build.sh             — npm build + inject window.__ENV__ + S3 sync + cache purge
+  deploy_handlers.sh   — hot-deploy dns/https Lambda handlers
+  deploy_audit.sh      — hot-deploy audit Lambda
+  deploy_users.sh      — hot-deploy users Lambda (--infra for first-time Terraform)
+  deploy.sh            — frontend build + S3 sync + Cloudflare cache purge
   get_token.sh         — gets fresh Cognito IdToken → writes VITE_DEMO_TOKEN to .env.local
 ```
 
 ---
 
-## DnsPage — Current State (Step 1 COMPLETE)
+## DynamoDB — Single Table Schema (`f5-asean-score-cards-prod`)
+
+**GSI:** `gsi1-entityType-createdAt` — `gsi1pk` (S) + `createdAt` (S)
+
+| pk | sk | gsi1pk | Use |
+|---|---|---|---|
+| `JOB#<jobId>` | `PILLAR#dns` | `JOB` | DNS discovery result |
+| `JOB#<jobId>` | `PILLAR#https` | `JOB` | HTTPS discovery result |
+| `AUDIT#<email>` | `<ISO-ts>#<uuid>` | `AUDIT` | Audit event |
+| `USER#<email>` | `METADATA` | `USER` | User record |
+
+**User item fields:** `email`, `name`, `role`, `country`, `builtIn`, `createdAt`, `updatedAt`
+
+**Discovery result item:**
+```
+PK: JOB#{jobId} / SK: PILLAR#dns
+jobId, accountId, domain, pillar, status, score
+findings: { ...all DNS probe data including issues[] }
+aiAnalysis: { status, model, tokensUsed, generatedAt,
+              sections: { executive, riskAssessment, f5Recommendation, nextSteps } }
+createdAt, completedAt
+```
+
+---
+
+## Users Feature (COMPLETE)
+
+### Architecture
+- User records stored in the existing DynamoDB single table at `USER#<email> / METADATA`
+- `GET /users` lists all users (admin only) — auto-seeds `INITIAL_USERS` on first call
+- `POST /users` creates a user (admin only)
+- `PUT /users/{email}` updates role/name/country (admin only, cannot change own role)
+- `DELETE /users/{email}` removes a user (admin only, cannot remove self)
+- Role resolved from DynamoDB at login via `resolveRole()` in `api/users.js`
+- Falls back to seed (`getRoleFromSeed`) if user is non-admin or API unreachable
+
+### Role model
+| Role | Access |
+|---|---|
+| `admin` | Full access — probes, reports, Users page, Audit Log (all users) |
+| `user` | Standard — probes, reports, own Audit Log |
+| `readonly` | Sample Reports + own Audit Log only |
+
+### Bootstrap
+On first admin login, `GET /users` triggers `_seed_if_empty()` which writes `INITIAL_USERS`
+to DynamoDB. If the admin record doesn't exist yet, write it directly:
+```bash
+aws dynamodb put-item \
+  --region ap-southeast-1 \
+  --table-name f5-asean-score-cards-prod \
+  --item '{
+    "pk":        {"S": "USER#j.yuliantoro@f5.com"},
+    "sk":        {"S": "METADATA"},
+    "gsi1pk":    {"S": "USER"},
+    "email":     {"S": "j.yuliantoro@f5.com"},
+    "name":      {"S": "Joko Yuliantoro"},
+    "role":      {"S": "admin"},
+    "country":   {"S": "Singapore"},
+    "builtIn":   {"BOOL": true},
+    "createdAt": {"S": "2026-04-21T00:00:00.000Z"},
+    "updatedAt": {"S": "2026-04-21T00:00:00.000Z"}
+  }'
+```
+
+### Key data/users.js exports
+```js
+INITIAL_USERS    — seed list (mirrors Lambda INITIAL_USERS)
+DEMO_OTP         — '123456'
+ROLE_LABELS      — { admin: 'Admin', user: 'User', readonly: 'Read-Only' }
+ROLE_COLORS      — { admin: {bg, text}, user: {bg, text}, readonly: {bg, text} }
+getRoleForEmail(email, users?)  — checks live registry then seed
+getRoleFromSeed(email)          — seed-only fallback
+```
+
+---
+
+## DnsPage — Current State (COMPLETE)
 
 **Section order in report:**
 1. Discovery context bar (appDomain, apexDomain, probe time, source)
@@ -134,137 +225,6 @@ const token = rawToken && !rawToken.startsWith('demo.') ? rawToken : null;
 
 ---
 
-## Audit Log — COMPLETE (Step 2 partial)
-
-### What was built
-Persistent audit log stored in DynamoDB. All login, logout, and DNS probe events are
-recorded permanently and survive across sessions and browser reloads.
-
-**Event types:** `login`, `logout`, `dns_probe_start`, `dns_probe_done`, `dns_probe_error`
-
-### DynamoDB access pattern (single table)
-```
-pk       = AUDIT#<actor-email>
-sk       = <ISO-ts>#<uuid>        — lexicographically sortable, newest-last on read (reversed)
-gsi1pk   = AUDIT                  — reuses existing gsi1-entityType-createdAt GSI
-createdAt = <ISO-ts>#<uuid>       — same value as sk, used as GSI sort key
-```
-Admin all-events query uses the existing `gsi1-entityType-createdAt` GSI — no new GSI needed.
-
-### API routes
-```
-POST /audit   — write one event (any authenticated user)
-GET  /audit   — list events (admin: all; others: own only)
-```
-Both routes use the existing Cognito JWT authorizer.
-
-### Frontend architecture
-```
-logEvent(type, actor, role, meta, idToken)       — in data/auditLog.js
-  → push to in-memory array (instant UI)
-  → sessionStorage persist (survives page refresh within session)
-  → fire-and-forget POST /audit via api/auditLog.js
-
-loadRemoteEvents(idToken)                        — called by AuditLogPage on mount
-  → GET /audit
-  → merge with in-memory cache, deduplicate by id
-  → historical events from previous sessions appear
-```
-
-### Critical: token and actor passing
-- **`idToken` is passed explicitly** from App state through to every `logEvent()` call and
-  to `AuditLogPage` as a prop. Never read lazily from sessionStorage.
-- **`VITE_DEMO_TOKEN` must NOT be used in `api/auditLog.js`** — it is always
-  `j.yuliantoro@f5.com`'s token and would mis-attribute all other users' events.
-- The **frontend UUID is authoritative**: `logEvent()` generates `id = crypto.randomUUID()`,
-  passes it to `postAuditEvent()`, which sends it in the POST body. The Lambda stores
-  `body.get("id") or str(uuid.uuid4())`. This ensures the in-memory event and the DynamoDB
-  item share the same ID so deduplication in `loadRemoteEvents()` works correctly.
-- The **actor email is sent in the POST body** (`{ id, type, actor, role, meta }`) and the
-  Lambda uses it as the authoritative source. JWT claim extraction is a fallback only.
-
-### AuditLogPage access matrix
-| Role | Sees |
-|---|---|
-| admin | All events, filter by type + user |
-| user | Own events only |
-| readonly | Own events only |
-
-### deploy_audit.sh usage
-```bash
-# First-time infra (creates Lambda + API routes via Terraform)
-./scripts/deploy_audit.sh --infra
-
-# Hot-deploy handler only (no Terraform)
-./scripts/deploy_audit.sh
-
-# Smoke test
-SMOKE_TEST=true ./scripts/deploy_audit.sh
-```
-
----
-
-## DynamoDB — Current Schema (single table: `f5-asean-score-cards-prod`)
-
-**Discovery result item:**
-```
-PK: JOB#{jobId}
-SK: PILLAR#dns
-gsi1pk: JOB
-jobId, accountId, domain, pillar, status, score
-findings: { ...all DNS probe data including issues[] }
-aiAnalysis: { status, model, tokensUsed, generatedAt, sections: { executive, riskAssessment, f5Recommendation, nextSteps } }
-createdAt, completedAt
-```
-
-**Audit event item:**
-```
-PK: AUDIT#{actor-email}
-SK: <ISO-ts>#<uuid>
-gsi1pk: AUDIT
-createdAt: <ISO-ts>#<uuid>   (same as SK)
-id: <uuid>                   (frontend-generated, used for deduplication)
-type: login|logout|dns_probe_start|dns_probe_done|dns_probe_error
-actor: email
-role: admin|user|readonly
-meta: { domain?, score?, error? }
-ts: ISO-8601
-```
-
----
-
-## Step 2 — What still needs to be built
-
-### Report save/load (not yet started)
-
-**Report Lambda** (`backend/lambda/report/handler.py`)
-Operations: save, load, list, archive, delete (soft)
-```
-POST   /v1/reports/dns          — save report (findings + edited aiSections)
-GET    /v1/reports/dns          — list saved reports for current user (or domain filter)
-GET    /v1/reports/dns/{id}     — load a specific saved report
-PATCH  /v1/reports/dns/{id}     — update aiSections (after user edits)
-DELETE /v1/reports/dns/{id}     — archive (status: active → archived)
-DELETE /v1/reports/dns/{id}?hard=true — admin only: true delete
-```
-
-**Report DynamoDB item:**
-```
-PK: REPORT#{domain}
-SK: REPORT#{reportId}
-reportId, domain, pillar, userId, status (active|archived|deleted)
-findings{}, issues[], scores{}, aiSections{ executive, riskAssessment, f5Recommendation, nextSteps }
-createdAt, savedAt, archivedAt
-GSI: by userId + createdAt (for "my reports" list)
-```
-
-**DnsPage additions:**
-- Saved Reports dropdown at top of DnsPage — lists past saves for current domain
-- Wire `Save Report` button to `POST /v1/reports/dns`
-- After save: show confirmation, add to dropdown
-
----
-
 ## Key Learnings / Principles
 
 - **"Discovery" not "Probe"** in customer-facing strings; internal code identifiers unchanged
@@ -274,17 +234,27 @@ GSI: by userId + createdAt (for "my reports" list)
 - **TTL guidance:** 300s = high score (modern standard); 3600s = low score
 - **DynamoDB:** boto3 resource API rejects Python floats — always use `_floats_to_decimal()` before `put_item`
 - **Demo token:** auth.js generates `demo.{base64}.signature` — detect with `startsWith('demo.')`, never send to API Gateway
-- **VITE_DEMO_TOKEN** is a real Cognito JWT for `j.yuliantoro@f5.com` stored in `.env.local`. It is used by `discovery.js` to authenticate DNS probe calls in demo mode. It must NOT be used in `api/auditLog.js` — doing so attributes all users' audit events to Joko.
-- **Cognito client ID:** current value is `1gnr4oqpj7jfqcdk7s9ljnnceo`. Both `get_token.sh` and `build.sh` must use this. If Terraform recreates the Cognito pool, update both scripts.
-- **API Gateway ID:** current value is `4j10a2iuk7`. Lambda invoke permissions (`aws lambda add-permission`) must reference this ID in `SourceArn`. If Terraform creates a new API Gateway, update Lambda permissions for all functions.
-- **build.sh injects `window.__ENV__`** at deploy time via `sed` into `dist/index.html`. This overrides `VITE_API_BASE_URL` and hardcoded fallbacks — it is the authoritative runtime config. Always update the URL and Cognito client ID in `build.sh` when they change.
 - **Print PDF:** App.module.css has `overflow:hidden` on `.shell` — override with `[class*="_shell_"]` in `@media print`
 - **CSS Modules:** Vite hashes class names — use `[class*="_shell_"]` substring selectors in `@media print`
 - **analysis_dns bundling:** `deploy_handlers.sh` copies `analysis_dns/handler.py` → `dns_discovery/analysis_dns.py` before zipping; clean up temp file after
-- **Azure endpoint:** use `/openai/v1/chat/completions` not `/openai/v1/responses` (Responses API uses different payload shape)
-- **AI sections display:** plain `<p>` text by default, `<textarea>` only when Edit button clicked — avoids all scrollbar/height issues in print
-- **Double-event bug (fixed):** OTP `handleOtpComplete` in LoginPage.jsx needed an `if (isLoading) return` guard. Without it, React StrictMode or rapid keypresses could fire `onAuthenticated` twice.
-- **Double-probe bug (fixed):** `handleRun` in DnsPage.jsx needed an `if (isRunning) return` guard at the top to prevent Enter key + button click both firing.
+- **Azure endpoint:** use `/openai/v1/chat/completions` not `/openai/v1/responses`
+- **AI sections display:** plain `<p>` text by default, `<textarea>` only when Edit button clicked
+- **Terraform init:** always run from `backend/terraform-cloudflare/` with backend config:
+  ```bash
+  terraform init \
+    -backend-config="bucket=f5-asean-score-card-s3" \
+    -backend-config="key=scorecard/terraform.tfstate" \
+    -backend-config="region=ap-southeast-1"
+  ```
+- **DEMO_OTP_ENABLED:** Terraform sets this to `false` on apply — manually re-enable after any `terraform apply`:
+  ```bash
+  aws lambda update-function-configuration \
+    --function-name f5-asean-score-cards-create-auth-prod \
+    --region ap-southeast-1 \
+    --environment "Variables={DEMO_OTP_ENABLED=true,SES_FROM_EMAIL=joko.yuliantoro@gmail.com,ENVIRONMENT=prod}"
+  ```
+- **Cognito client recreation:** if `terraform apply` recreates `aws_cognito_user_pool_client`, update `CLIENT_ID` in `get_token.sh` and the `sed` line in `deploy.sh`
+- **Users Lambda chicken-and-egg:** `GET /users` requires admin role, but role comes from DynamoDB. Bootstrap by writing the admin record directly with `aws dynamodb put-item` before first login.
 
 ---
 
@@ -294,56 +264,39 @@ GSI: by userId + createdAt (for "my reports" list)
 # Frontend dev server
 cd frontend && npm run dev
 
-# Get fresh Cognito token (valid 1hr) → writes to .env.local
+# Install frontend deps (first time or after clean)
+cd frontend && npm install
+
+# Get fresh Cognito token (valid 8hr) → writes to .env.local
 ./scripts/get_token.sh
 
-# Deploy + smoke test dns_discovery Lambda (includes analysis_dns.py)
+# Deploy frontend (build + S3 sync + Cloudflare cache purge)
+./scripts/deploy.sh
+
+# Hot-deploy dns_discovery Lambda (includes analysis_dns.py)
+./scripts/deploy_handlers.sh dns
 SMOKE_TEST=true SMOKE_DOMAIN=f5.com ./scripts/deploy_handlers.sh dns
 
-# Smoke test only (no deploy)
-SMOKE_TEST=true SMOKE_DOMAIN=dbs.com ./scripts/deploy_handlers.sh dns --smoke-only
+# Hot-deploy users Lambda
+./scripts/deploy_users.sh
+SMOKE_TEST=true ./scripts/deploy_users.sh --smoke-only
 
-# Deploy audit Lambda (handler only, no Terraform)
+# Hot-deploy audit Lambda
 ./scripts/deploy_audit.sh
 
-# First-time audit infra (Terraform + handler)
-./scripts/deploy_audit.sh --infra
-
-# Full build + S3 sync + cache purge
-./scripts/build.sh
-
-# Terraform apply (infra changes)
-cd backend/terraform && terraform apply -auto-approve
+# Terraform (infra changes) — always from terraform-cloudflare/
+cd backend/terraform-cloudflare
+terraform init -backend-config="bucket=f5-asean-score-card-s3" \
+               -backend-config="key=scorecard/terraform.tfstate" \
+               -backend-config="region=ap-southeast-1"
+terraform apply -auto-approve
 
 # Check Lambda logs (last 10 min)
 aws logs tail /aws/lambda/f5-asean-score-cards-dns-discovery-prod \
   --region ap-southeast-1 --since 10m --format short
 
-aws logs tail /aws/lambda/f5-asean-score-cards-audit-prod \
+aws logs tail /aws/lambda/f5-asean-score-cards-users-prod \
   --region ap-southeast-1 --since 10m --format short
-
-# Check AI analysis result from smoke test
-cat backend/terraform/.build/smoke_dns.json | python3 -c "
-import json, sys
-body = json.loads(json.loads(sys.stdin.read())['body'])
-ai = body.get('aiAnalysis', {})
-print('status:', ai.get('status'))
-print('tokens:', ai.get('tokensUsed'))
-print(ai.get('sections',{}).get('executive','')[:300])
-"
-
-# Verify what URL is baked into the live site
-curl -s "https://asean-score-cards.f5-adsp.com/" | grep -o '__ENV__[^<;]*'
-
-# Fix stale Lambda invoke permission after API Gateway recreation
-aws lambda remove-permission \
-  --function-name f5-asean-score-cards-dns-discovery-prod \
-  --region ap-southeast-1 --statement-id AllowAPIGatewayDNS
-aws lambda add-permission \
-  --function-name f5-asean-score-cards-dns-discovery-prod \
-  --region ap-southeast-1 --statement-id AllowAPIGatewayDNS \
-  --action lambda:InvokeFunction --principal apigateway.amazonaws.com \
-  --source-arn "arn:aws:execute-api:ap-southeast-1:120864355486:4j10a2iuk7/*/*"
 ```
 
 ---
@@ -361,20 +314,10 @@ OTP in demo mode: always `123456`
 
 ---
 
-## AWS Resource IDs (ap-southeast-1)
-| Resource | ID / Name |
-|---|---|
-| API Gateway | `4j10a2iuk7` |
-| Cognito User Pool | `ap-southeast-1_ApP6AbUqs` |
-| Cognito Client ID | `1gnr4oqpj7jfqcdk7s9ljnnceo` |
-| DynamoDB table | `f5-asean-score-cards-prod` |
-| S3 SPA bucket | `f5-asean-score-cards-spa-prod-5ecbdcce` |
-| Account ID | `120864355486` |
-
----
-
 ## Pending / Known Issues
-- HttpsPage: original stub, needs same treatment as DnsPage (Step 3+)
-- Report save/load (Step 2): Lambda + DnsPage dropdown not yet built
-- GitHub Actions CI/CD: not yet set up
 - SES sandbox: only verified addresses receive OTP emails; demo mode bypasses this
+- HttpsPage: original stub, needs same treatment as DnsPage (Step 3+)
+- GitHub Actions CI/CD: not yet set up
+- Report save/load (Step 2): `Save Report` button in DnsPage is still a stub
+- DEMO_OTP_ENABLED resets to `false` on every `terraform apply` — must re-enable manually
+- Cognito client ID hardcoded in `get_token.sh` — update if client is ever recreated by Terraform

@@ -6,7 +6,7 @@
 //   demo  — no API calls, fixed OTP = 123456 (for local dev / cost-free iteration)
 
 const REGION    = 'ap-southeast-1';
-const CLIENT_ID = '233vpvh8n0c3q95hn6021mpod8';
+const CLIENT_ID = window.__ENV__?.COGNITO_CLIENT_ID || '5a3vcf65qbof6ul7popqsaav5d';
 const ENDPOINT  = `https://cognito-idp.${REGION}.amazonaws.com/`;
 const DEMO_OTP  = '123456';
 
