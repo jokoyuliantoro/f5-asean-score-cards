@@ -17,7 +17,7 @@ printable PDF report — all before credentials are granted.
 - React + Vite, CSS Modules throughout
 - No React Router — plain switch in `App.jsx`
 - Chart.js via react-chartjs-2
-- Auth: Cognito OTP flow (no password), demo mode fixed OTP = `123456`
+- Auth: Cognito OTP flow (no password), real OTP sent via SES email; demo mode via `VITE_AUTH_MODE=demo` in `.env.local`
 - Dev: `npm run dev` → http://localhost:5173
 - Runtime config injected into `index.html` at deploy time via `window.__ENV__`
 
@@ -68,7 +68,7 @@ frontend/
     data/
       appData.js       — scoreColor, fmtTimestamp, SCAN_GROUPS
       auditLog.js      — in-session audit log store (sessionStorage)
-      users.js         — INITIAL_USERS, ROLE_LABELS, ROLE_COLORS, DEMO_OTP,
+      users.js         — INITIAL_USERS, ROLE_LABELS, ROLE_COLORS,
                          getRoleForEmail (seed fallback), getRoleFromSeed
 
 backend/
@@ -83,8 +83,8 @@ backend/
       handler.py       — shared TCP latency probe, deployed in SEA + USE1
     auth/
       define_auth_challenge.py
-      create_auth_challenge.py  — DEMO_OTP_ENABLED must be 'true' for demo mode
-      verify_auth_challenge.py
+      create_auth_challenge.py  — DEMO_OTP_ENABLED=false for real OTP email (true = fixed 123456 for local dev only)
+      verify_auth_challenge.py  — DEMO_OTP_ENABLED=false must match create_auth_challenge
     audit/
       handler.py       — write/query audit events (POST /audit, GET /audit)
     users/
@@ -175,7 +175,6 @@ aws dynamodb put-item \
 ### Key data/users.js exports
 ```js
 INITIAL_USERS    — seed list (mirrors Lambda INITIAL_USERS)
-DEMO_OTP         — '123456'
 ROLE_LABELS      — { admin: 'Admin', user: 'User', readonly: 'Read-Only' }
 ROLE_COLORS      — { admin: {bg, text}, user: {bg, text}, readonly: {bg, text} }
 getRoleForEmail(email, users?)  — checks live registry then seed
@@ -246,13 +245,8 @@ const token = rawToken && !rawToken.startsWith('demo.') ? rawToken : null;
     -backend-config="key=scorecard/terraform.tfstate" \
     -backend-config="region=ap-southeast-1"
   ```
-- **DEMO_OTP_ENABLED:** Terraform sets this to `false` on apply — manually re-enable after any `terraform apply`:
-  ```bash
-  aws lambda update-function-configuration \
-    --function-name f5-asean-score-cards-create-auth-prod \
-    --region ap-southeast-1 \
-    --environment "Variables={DEMO_OTP_ENABLED=true,SES_FROM_EMAIL=joko.yuliantoro@gmail.com,ENVIRONMENT=prod}"
-  ```
+- **DEMO_OTP_ENABLED:** Must be `false` on BOTH `create_auth_challenge` and `verify_auth_challenge` Lambdas for real OTP email. Terraform sets this to `false` on apply — this is correct, do NOT re-enable. To use demo mode locally, set `VITE_AUTH_MODE=demo` in `frontend/.env.local` instead (no Lambda changes needed).
+- **OTP auth two-Lambda rule:** `DEMO_OTP_ENABLED` must be in sync on both auth Lambdas. If one is `true` and the other `false`, login will always fail — create sends `123456`, verify compares against the real random OTP (or vice versa).
 - **Cognito client recreation:** if `terraform apply` recreates `aws_cognito_user_pool_client`, update `CLIENT_ID` in `get_token.sh` and the `sed` line in `deploy.sh`
 - **Users Lambda chicken-and-egg:** `GET /users` requires admin role, but role comes from DynamoDB. Bootstrap by writing the admin record directly with `aws dynamodb put-item` before first login.
 
@@ -310,14 +304,27 @@ aws logs tail /aws/lambda/f5-asean-score-cards-users-prod \
 | any other @f5.com | read-only |
 | non-@f5.com | read-only (partner) |
 
-OTP in demo mode: always `123456`
+OTP: real 6-digit code sent via SES email. Demo mode (fixed `123456`) requires `VITE_AUTH_MODE=demo` in `frontend/.env.local` — no Lambda changes needed.
+
+---
+
+## SES Verified Identities (sandbox)
+Only these addresses can **receive** OTP email while SES remains in sandbox:
+- `joko.yuliantoro@gmail.com` (sender)
+- `j.yuliantoro@f5.com`
+- `a.iswanto@f5.com`
+- `ky.cheong@f5.com`
+
+To add a new user who needs login access, verify their address first:
+```bash
+aws sesv2 create-email-identity --email-identity <email> --region ap-southeast-1
+```
 
 ---
 
 ## Pending / Known Issues
-- SES sandbox: only verified addresses receive OTP emails; demo mode bypasses this
+- SES still in sandbox — new users must be verified before they can receive OTP email
 - HttpsPage: original stub, needs same treatment as DnsPage (Step 3+)
 - GitHub Actions CI/CD: not yet set up
 - Report save/load (Step 2): `Save Report` button in DnsPage is still a stub
-- DEMO_OTP_ENABLED resets to `false` on every `terraform apply` — must re-enable manually
 - Cognito client ID hardcoded in `get_token.sh` — update if client is ever recreated by Terraform
