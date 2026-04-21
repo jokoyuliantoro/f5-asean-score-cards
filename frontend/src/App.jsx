@@ -14,7 +14,8 @@ import DeepScanPage       from './components/DeepScanPage';
 import HttpsPage          from './components/HttpsPage';
 import LifecyclePage      from './components/LifecyclePage';
 import AuditLogPage       from './components/AuditLogPage';
-import { INITIAL_USERS, getRoleForEmail } from './data/users';
+import { resolveRole }    from './api/users';
+import { getRoleFromSeed } from './data/users';
 import { logEvent, clearEvents, EVENT_TYPES } from './data/auditLog';
 import styles from './App.module.css';
 
@@ -34,21 +35,26 @@ export default function App() {
   const [idToken, setIdToken] = useState(null);   // Cognito IdToken for API calls
   const [navItem, setNavItem] = useState('dashboard');
 
-  // Live user registry — admins can edit roles in UsersPage
-  const [users, setUsers] = useState(INITIAL_USERS);
+  // Called by LoginPage after successful OTP verification.
+  // Resolves role from DynamoDB via /users; falls back to seed if unreachable.
+  const handleAuthenticated = async (incomingEmail, _ignoredRole, token) => {
+    // Try to resolve role from DynamoDB; fall back to seed on any error.
+    let liveRole;
+    try {
+      liveRole = await resolveRole(incomingEmail, token);
+    } catch (_) {
+      liveRole = getRoleFromSeed(incomingEmail);
+    }
 
-  // Called by LoginPage after successful OTP verification
-  const handleAuthenticated = (email, incomingRole, token) => {
-    const liveRole = getRoleForEmail(email, users) ?? incomingRole ?? 'readonly';
-    setEmail(email);
+    setEmail(incomingEmail);
     setRole(liveRole);
     setIdToken(token);
     setNavItem(liveRole === 'readonly' ? 'sample-reports' : 'dashboard');
-    logEvent(EVENT_TYPES.LOGIN, email, liveRole, {}, token);
+    logEvent(EVENT_TYPES.LOGIN, incomingEmail, liveRole);
   };
 
   if (!email) {
-    return <LoginPage onAuthenticated={handleAuthenticated} users={users} />;
+    return <LoginPage onAuthenticated={handleAuthenticated} />;
   }
 
   const handleNav = (id) => {
@@ -58,7 +64,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    logEvent(EVENT_TYPES.LOGOUT, email, role, {}, idToken);
+    logEvent(EVENT_TYPES.LOGOUT, email, role);
     clearEvents();
     setEmail(null);
     setRole(null);
@@ -82,10 +88,10 @@ export default function App() {
       case 'deep-lifecycle':  return <LifecyclePage pillar="deepScan" />;
       case 'users':
         return role === 'admin'
-          ? <UsersPage currentUserEmail={email} users={users} onUsersChange={setUsers} />
+          ? <UsersPage currentUserEmail={email} idToken={idToken} />
           : null;
       case 'audit-log':
-        return <AuditLogPage currentUserEmail={email} role={role} idToken={idToken} />;
+        return <AuditLogPage currentUserEmail={email} role={role} />;
       default:
         return (
           <div className={styles.placeholder}>
